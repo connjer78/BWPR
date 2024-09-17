@@ -29,6 +29,7 @@ TrelloPowerUp.initialize({
 
                   // Define the ID of the target board where new cards will be created
                   const targetBoardId = 'ZMxZMSgR'; // Replace with actual board ID
+                  const targetListId = '66e0a34618ad960763506825'; //ID of the list where the new cards should go
 
                   // Create new cards on the target board based on matching templates
                   const creationPromises = matchingTemplates.map(function (template) {
