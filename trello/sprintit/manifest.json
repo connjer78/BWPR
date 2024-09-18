@@ -1,10 +1,16 @@
 {
-  "name": "Label Card Creator",
-  "description": "A Power-Up that adds a button to cards to create new cards based on labels.",
+  "name": "Sprint It!",
+  "description": "Create new sprint cards based on project card labels.",
+  "author": "Jeremy Conner",
   "version": "1.0",
   "capabilities": {
-    "card-buttons": {
-      "url": "https://connjer78.github.io/bwpr/trello/sprintit/powerup.html"
-    }
+    "cardButtons": [{
+      "text": "Sprint It!",
+     
+      "callback": "onSprintItClick"
+    }]
+  },
+  "connectors": {
+    "url": "https://your-github-page.com/powerup.html" // Replace with your hosted HTML URL
   }
 }
