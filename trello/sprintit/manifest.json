@@ -1,12 +1,12 @@
 {
   "name": "Sprint It!",
   "description": "Create new sprint cards based on project card labels.",
-  "author": "Jeremy Conner",
+  "author": "Your Name",
   "version": "1.0",
   "capabilities": {
     "cardButtons": [{
       "text": "Sprint It!",
-     
+      "icon": "https://your-icon-url.com/icon.png", // Replace with your icon URL
       "callback": "onSprintItClick"
     }]
   },
