@@ -3,10 +3,10 @@
     "description": "A Power-Up to create sprint cards from templates based on labels.",
     "author": "Your Name",
     "version": "1.0.1",
-    "icon": "https://raw.githubusercontent.com/connjer78/BWPR/main/assets/rocketship.PNG", // Replace with your actual icon URL
+    "icon": "https://raw.githubusercontent.com/connjer78/BWPR/main/assets/rocketship.PNG", 
     "capabilities": {
         "card-buttons": {
-            "url": "https://raw.githubusercontent.com/connjer78/BWPR/main/index.html", // Replace with the URL to your index.html
+            "url": "https://raw.githubusercontent.com/connjer78/BWPR/main/index.html", 
             "height": 300
         }
     },
