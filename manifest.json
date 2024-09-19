@@ -1,17 +1,22 @@
 {
-  "name": "Sprint It!",
-  "description": "Create new sprint cards based on project card labels.",
-  "author": "Jeremy Conner", 
-  "version": "1.0",
-  "capabilities": {
-    "cardButtons": [{
-      "text": "Sprint It!", // Text displayed on the card button
-      "icon": "https://raw.githubusercontent.com/connjer78/BWPR/main/assets/rocketship.PNG", 
-      "callback": "onSprintItClick" // The callback function to execute on click
-    }]
-  },
-  "connectors": {
-    "url": "https://raw.githubusercontent.com/connjer78/BWPR/main/index.html" 
-  }
+    "name": "Sprint It!",
+    "description": "A Power-Up to create sprint cards from templates based on labels.",
+    "author": "Your Name",
+    "version": "1.0.0",
+    "icon": "https://your-github-repo-url/assets/your-icon.png", // Replace with your actual icon URL
+    "capabilities": {
+        "card-buttons": {
+            "url": "https://your-github-repo-url/index.html", // Replace with the URL to your index.html
+            "height": 300
+        }
+    },
+    "permissions": {
+        "cards": {
+            "read": true,
+            "write": true
+        },
+        "boards": {
+            "read": true
+        }
+    }
 }
-//good to go
