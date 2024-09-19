@@ -3,6 +3,7 @@ var t = TrelloPowerUp.iframe(); // Create a Trello Power-Up instance
 
 // Function to handle button click
 t.cardButton({
+    text: 'Sprint It!',
     callback: function(t, options) { // Define callback for button click
         // Fetch the ID of the sprint board
         return t.get('card', 'shared', 'ZMxZMSgR') // Replace with your sprint board ID - DONE
