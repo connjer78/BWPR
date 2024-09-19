@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trello Power-Up</title>
-    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+    <script src="https://p.trellocdn.com/power-up.min.js"></script> <!-- Updated script source -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,11 +14,15 @@
             margin-top: 20px;
             color: green;
         }
+        #error {
+            color: red;
+        }
     </style>
 </head>
 <body>
     <h1>Create Sprint Cards</h1>
     <div id="feedback"></div> <!-- Feedback div for messages -->
+    <div id="error"></div> <!-- Error messages div -->
 
     <script>
         // Initialize the Trello Power-Up
@@ -26,11 +30,15 @@
             'card-buttons': function(t, options) {
                 return [{
                     icon: 'https://connjer78.github.io/BWPR/assets/rocketship.PNG', // Your icon URL
-                    text: 'Sprint This Bitch!',
+                    text: 'Sprint It!',
                     callback: function(t) {
+                        // Clear previous messages
+                        document.getElementById('feedback').innerText = '';
+                        document.getElementById('error').innerText = '';
+
                         // Show feedback to the user
-                        alert("Creating sprint cards...");
                         document.getElementById('feedback').innerText = "Creating sprint cards...";
+                        console.log("Feedback message set to: Creating sprint cards...");
 
                         // Card creation process
                         const cardData = {
@@ -38,17 +46,17 @@
                             idList: '66e9ca5e0e5d1635fdb8388d', // Your list ID
                         };
 
+                        console.log("Card Data being sent:", cardData);
+
                         // Post the card data to Trello
                         return t.post('cards', cardData)
                             .then(function(response) {
-                                // Show success feedback
-                                alert("Sprint cards created successfully!");
+                                console.log("Response received:", response);
                                 document.getElementById('feedback').innerText = "Sprint cards created successfully!";
                             })
                             .catch(function(error) {
-                                // Show error feedback
-                                alert("Error creating sprint cards: " + error.message);
-                                document.getElementById('feedback').innerText = "Error creating sprint cards: " + error.message;
+                                console.error("Error creating sprint cards:", error);
+                                document.getElementById('error').innerText = "Error creating sprint cards: " + error.message;
                             });
                     }
                 }];
