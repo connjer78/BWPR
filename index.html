@@ -1,13 +1,76 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Sprint It!</title> <!-- Title of the HTML page -->
-    <script src="https://p.trellocdn.com/power-up.min.js"></script> <!-- Load the Trello Power-Up library -->
-    <script src="powerup.js"></script> <!-- Link to your JavaScript file -->
-</head>
-<body>
-    <h1>Sprint It!</h1> <!-- Main heading -->
-    <p>Creating sprint cards based on selected labels...</p> <!-- Instructional text -->
-    <div id="output"></div> <!-- Placeholder for output messages -->
-</body>
-</html>
+1  <!DOCTYPE html>
+2  <html>
+3  <head>
+4      <title>Trello Power-Up</title>
+5      <script src="https://p.trello.com/1/trellosdk.js"></script>
+6      <script>
+7          // Initialize the Trello Power-Up
+8          TrelloPowerUp.initialize({
+9              'card-buttons': function(t, options) {
+10                 return [{
+11                     text: 'Sprint It!', // Text displayed on the button
+12                     callback: function(t, options) {
+13                         console.log("Button clicked!"); // Log button click for debugging
+14                         
+15                         // Fetch the ID of the sprint board
+16                         return t.get('card', 'shared', 'sprintBoardId') // Replace with your sprint board ID
+17                             .then(function(sprintBoardId) { // When the board ID is retrieved
+18                                 // Fetch the labels from the card
+19                                 return t.get('card', 'shared', 'labels')
+20                                     .then(function(labels) { // When the labels are retrieved
+21                                         // For each label, find the corresponding template card
+22                                         labels.forEach(function(label) {
+23                                             findTemplateCard(label).then(function(templateCard) { // Find the template card by label
+24                                                 if (templateCard) {
+25                                                     createSprintCard(sprintBoardId, templateCard); // Create sprint card from template
+26                                                 } else {
+27                                                     console.error('Template not found for label:', label.name); // Log if no template found
+28                                                 }
+29                                             });
+30                                         });
+31                                     });
+32                             });
+33                     }
+34                 }];
+35             }
+36         });
+37 
+38         // Function to find the template card by label
+39         function findTemplateCard(label) {
+40             var templateBoardId = 'YOUR_TEMPLATE_BOARD_ID'; // Replace with your template board ID
+41             // Fetch all cards from the template board
+42             return t.get('board', 'all')
+43                 .then(function(boardData) {
+44                     var cards = boardData.cards; // Get the list of cards
+45                     // Find the card that has the same name as the label
+46                     return cards.find(card => card.name === label.name); // Return the matching template card
+47                 });
+48         }
+49 
+50         // Function to create a new card in the sprint board from a template card
+51         function createSprintCard(boardId, templateCard) {
+52             // Define the new card data using the template card's details
+53             var cardData = {
+54                 name: templateCard.name, // The name of the template card as the new card title
+55                 desc: templateCard.desc, // Copy the description from the template
+56                 labels: templateCard.labels.map(lbl => lbl.id), // Assign the template's label IDs to the new card
+57                 idList: 'YOUR_ACTUAL_LIST_ID' // Replace with your actual list ID
+58             };
+59 
+60             // Use Trello API to create a new card
+61             t.post('cards', cardData)
+62                 .then(function(response) {
+63                     // Log successful card creation
+64                     console.log('Card created:', response);
+65                 })
+66                 .catch(function(error) {
+67                     // Handle any errors
+68                     console.error('Error creating card:', error);
+69                 });
+70         }
+71     </script>
+72 </head>
+73 <body>
+74     <h1>Your Trello Power-Up</h1>
+75 </body>
+76 </html>
