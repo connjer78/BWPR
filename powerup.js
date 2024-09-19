@@ -1,83 +1,62 @@
-// Initialize Trello Power-Up context
-const t = TrelloPowerUp.iframe();
+// Initialize the Trello Power-Up
+var t = TrelloPowerUp.iframe(); // Create a Trello Power-Up instance
 
-// Set up the Power-Up
-TrelloPowerUp.initialize({
-  // Define the `card-buttons` capability, which adds a button to the card menu
-  'card-buttons': function (t, options) {
-    return [
-      {
-        // Text that will appear on the button in the card menu
-        text: 'Sprint It!',
-        callback: function (t) {
-          // Handle the button click event
-          return t.card('all') // Get all details about the current card
-            .then(function (card) {
-              // Extract labels, board ID, and card title from the current card
-              const labels = card.labels; 
-              const boardId = card.idBoard;
-              const cardTitle = card.name;
-
-              // Define the ID of the board where template cards are stored
-              const templateBoardId = '1rW0VzoP'; // Replace with actual board ID
-
-              // Fetch all template cards from the template board
-              return t.get('boards', 'cards', [templateBoardId])
-                .then(function (templateCards) {
-                  // Filter the template cards to match the labels from the current card
-                  const matchingTemplates = fetchTemplateCards(templateCards, labels);
-
-                  // Define the ID of the target board where new cards will be created
-                  const targetBoardId = 'ZMxZMSgR'; // Replace with actual board ID
-                  const targetListId = '66e0a34618ad960763506825'; //ID of the list where the new cards should go
-
-                  // Create new cards on the target board based on matching templates
-                  const creationPromises = matchingTemplates.map(function (template) {
-                    const newCardTitle = `${cardTitle} - ${template.labelName}`;
-                    return createCardOnBoard(t, targetBoardId, newCardTitle, template);
-                  });
-
-                  // Wait for all card creation promises to complete and then close the popup
-                  return Promise.all(creationPromises)
-                    .then(() => t.closePopup()); // Close the popup once all cards are created
-                });
+// Function to handle button click
+t.cardButton({
+    callback: function(t, options) { // Define callback for button click
+        // Fetch the ID of the sprint board
+        return t.get('card', 'shared', 'ZMxZMSgR') // Replace with your sprint board ID - DONE
+            .then(function(sprintBoardId) { // When the board ID is retrieved
+                // Fetch the labels from the card
+                return t.get('card', 'shared', 'labels')
+                    .then(function(labels) { // When the labels are retrieved
+                        // For each label, find the corresponding template card
+                        labels.forEach(function(label) {
+                            findTemplateCard(label).then(function(templateCard) { // Find the template card by label
+                                if (templateCard) {
+                                    createSprintCard(sprintBoardId, templateCard); // Create sprint card from template
+                                } else {
+                                    console.error('Template not found for label:', label.name); // Log if no template found
+                                }
+                            });
+                        });
+                    });
             });
-        }
-      }
-    ];
-  }
+    }
 });
 
-// Function to filter template cards based on matching labels
-function fetchTemplateCards(templateCards, labels) {
-  const labelNames = labels.map(label => label.name); // Extract label names from the current card
-  return templateCards.filter(card => {
-    const cardLabelNames = card.labels.map(label => label.name); // Extract label names from each template card
-    return cardLabelNames.some(labelName => labelNames.includes(labelName)); // Check for matching labels
-  }).map(card => {
-    return {
-      id: card.id,
-      description: card.desc,
-      checklists: card.checklists,
-      labels: card.labels,
-      labelName: card.labels[0] ? card.labels[0].name : '' // Use the name of the first label for card creation
-    };
-  });
+// Function to find the template card by label
+function findTemplateCard(label) {
+    // Replace with your board ID containing the templates
+    var templateBoardId = '1rW0VzoP'; // Replace with your template board ID - DONE
+
+    // Fetch all cards from the template board
+    return t.get('board', 'all')
+        .then(function(boardData) {
+            var cards = boardData.cards; // Get the list of cards
+            // Find the card that has the same name as the label
+            return cards.find(card => card.name === label.name); // Return the matching template card
+        });
 }
 
-// Function to create a new card on the target board
-function createCardOnBoard(t, boardId, title, templateCard) {
-  return t.post('boards', 'createCard', {
-    name: title, // Set the title of the new card
-    desc: templateCard.description, // Use the description from the template card
-    idBoard: boardId, // Specify the target board ID
-    checklists: templateCard.checklists.map(checklist => ({
-      name: checklist.name, // Set the name of each checklist
-      checkItems: checklist.checkItems.map(item => ({
-        name: item.name, // Set the name of each checklist item
-        checked: item.state === 'complete' // Set the item state based on whether it's checked or not
-      }))
-    })),
-    labels: templateCard.labels.map(label => label.id) // Add labels from the template card to the new card
-  });
+// Function to create a new card in the sprint board from a template card
+function createSprintCard(boardId, templateCard) {
+    // Define the new card data using the template card's details
+    var cardData = {
+        name: templateCard.name, // The name of the template card as the new card title
+        desc: templateCard.desc, // Copy the description from the template
+        labels: templateCard.labels.map(lbl => lbl.id), // Assign the template's label IDs to the new card
+        idList: '66e9ca5e0e5d1635fdb8388d' // ID of the list where the new card will be created
+    };
+
+    // Use Trello API to create a new card
+    t.post('cards', cardData)
+        .then(function(response) {
+            // Log successful card creation
+            console.log('Card created:', response);
+        })
+        .catch(function(error) {
+            // Handle any errors
+            console.error('Error creating card:', error);
+        });
 }
