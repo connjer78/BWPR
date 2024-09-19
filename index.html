@@ -1,75 +1,59 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Trello Power-Up</title>
-    <script src="https://p.trellocdn.com/power-up.min.js"></script>
-    <script>
-        // Initialize the Trello Power-Up
-        TrelloPowerUp.initialize({
-            'card-buttons': function(t, options) {
-                return [{
-                    text: 'Sprint It!', // Text displayed on the button
-                    callback: function(t, options) {
-                        console.log("Button clicked!"); // Log button click for debugging
-                        
-                        // Fetch the ID of the current board
-                        return t.get('card', 'idBoard')
-                            .then(function(boardId) { // When the board ID is retrieved
-                                // Fetch the labels from the card
-                                return t.get('card', 'shared', 'labels')
-                                    .then(function(labels) { // When the labels are retrieved
-                                        // For each label, find the corresponding template card
-                                        labels.forEach(function(label) {
-                                            findTemplateCard(boardId, label).then(function(templateCard) { // Find the template card by label
-                                                if (templateCard) {
-                                                    createSprintCard(boardId, templateCard); // Create sprint card from template
-                                                } else {
-                                                    console.error('Template not found for label:', label.name); // Log if no template found
-                                                }
-                                            });
-                                        });
-                                    });
-                            });
-                    }
-                }];
-            }
-        });
-        
-        // Function to find the template card by label
-        function findTemplateCard(boardId, label) {
-            // Fetch all cards from the current board
-            return t.get('board', 'all')
-                .then(function(boardData) {
-                    var cards = boardData.cards; // Get the list of cards
-                    // Find the card that has the same name as the label
-                    return cards.find(card => card.name === label.name); // Return the matching template card
-                });
-        }
-        
-        // Function to create a new card in the board from a template card
-        function createSprintCard(boardId, templateCard) {
-            // Define the new card data using the template card's details
-            var cardData = {
-                name: templateCard.name, // The name of the template card as the new card title
-                desc: templateCard.desc, // Copy the description from the template
-                labels: templateCard.labels.map(lbl => lbl.id), // Assign the template's label IDs to the new card
-                idList: '66e9ca5e0e5d1635fdb8388d' // Replace with your actual list ID
-            };
-        
-            // Use Trello API to create a new card
-            t.post('cards', cardData)
-                .then(function(response) {
-                    // Log successful card creation
-                    console.log('Card created:', response);
-                })
-                .catch(function(error) {
-                    // Handle any errors
-                    console.error('Error creating card:', error);
-                });
-        }
-    </script>
-</head>
-<body>
-    <h1>Your Trello Power-Up</h1>
-</body>
-</html>
+1  <!DOCTYPE html>
+2  <html lang="en">
+3  <head>
+4      <meta charset="UTF-8">
+5      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+6      <title>Trello Power-Up</title>
+7      <script src="https://p.trellocdn.com/power-up.min.js"></script>
+8      <style>
+9          body {
+10             font-family: Arial, sans-serif;
+11             padding: 20px;
+12         }
+13         #feedback {
+14             margin-top: 20px;
+15             color: green;
+16         }
+17     </style>
+18 </head>
+19 <body>
+20     <h1>Create Sprint Cards</h1>
+21     <div id="feedback"></div> <!-- Feedback div for messages -->
+22 
+23     <script>
+24         // Initialize the Trello Power-Up
+25         TrelloPowerUp.initialize({
+26             'card-buttons': function(t, options) {
+27                 return [{
+28                     icon: 'https://connjer78.github.io/BWPR/assets/rocketship.PNG', // Replaced with your icon URL
+29                     text: 'Sprint It!',
+30                     callback: function(t) {
+31                         // Show feedback to the user
+32                         alert("Creating sprint cards..."); // Alert for starting card creation
+33                         document.getElementById('feedback').innerText = "Creating sprint cards..."; // Feedback message on the page
+34 
+35                         // Simulating card creation process (replace with your actual logic)
+36                         const cardData = {
+37                             name: 'New Sprint Card',
+38                             idList: '66e9ca5e0e5d1635fdb8388d', // Replaced with your list ID
+39                         };
+40 
+41                         // Post the card data to Trello
+42                         return t.post('cards', cardData)
+43                             .then(function(response) {
+44                                 // Show success feedback
+45                                 alert("Sprint cards created successfully!"); // Alert for successful creation
+46                                 document.getElementById('feedback').innerText = "Sprint cards created successfully!"; // Success message on the page
+47                             })
+48                             .catch(function(error) {
+49                                 // Show error feedback
+50                                 alert("Error creating sprint cards: " + error.message); // Alert for error
+51                                 document.getElementById('feedback').innerText = "Error creating sprint cards: " + error.message; // Error message on the page
+52                             });
+53                     }
+54                 }];
+55             }
+56         });
+57     </script>
+58 </body>
+59 </html>
