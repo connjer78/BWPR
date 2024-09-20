@@ -1,69 +1,78 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8"> <!-- Character encoding for the document -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive design -->
-    <title>Trello Power-Up</title> <!-- Title of the HTML document -->
-    <script src="https://p.trellocdn.com/power-up.min.js"></script> <!-- Include the Trello Power-Up SDK -->
-    <style>
-        body {
-            font-family: Arial, sans-serif; <!-- Set the font for the body -->
-            padding: 20px; <!-- Add padding around the content -->
-        }
-        #feedback {
-            margin-top: 20px; <!-- Add margin above the feedback message -->
-            color: green; <!-- Set the text color for feedback messages -->
-        }
-        #error {
-            color: red; <!-- Set the text color for error messages -->
-        }
-    </style>
+    <title>Trello Power-Up</title>
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
 </head>
 <body>
-    <h1>Create Sprint Cards</h1> <!-- Main heading -->
-    <div id="feedback"></div> <!-- Div for displaying feedback messages -->
-    <div id="error"></div> <!-- Div for displaying error messages -->
-
     <script>
-        // Initialize the Trello Power-Up
         TrelloPowerUp.initialize({
-            'card-buttons': function(t, options) { // Define a card button
+            'card-buttons': function(t, options) {
                 return [{
-                    icon: 'https://connjer78.github.io/BWPR/assets/rocketship.PNG', // URL of the button icon
-                    text: 'Sprint It!', // Text displayed on the button
-                    callback: function(t) { // Function to execute when the button is clicked
-                        // Clear previous messages
-                        document.getElementById('feedback').innerText = ''; // Clear feedback
-                        document.getElementById('error').innerText = ''; // Clear error messages
-
-                        // Show feedback to the user
-                        document.getElementById('feedback').innerText = "Creating sprint cards..."; // Inform the user
-                        console.log("Feedback message set to: Creating sprint cards..."); // Log the feedback message
+                    icon: 'https://connjer78.github.io/BWPR/assets/rocketship.PNG',
+                    text: 'Sprint It Now!',
+                    callback: function(t) {
+                        // Show alert to the user
+                        t.alert({
+                            message: 'Creating Sprint Cards',
+                            duration: 3
+                        });
 
                         // Card creation process
-                        const cardData = {
-                            name: 'New Sprint Card', // Name of the new card
-                            idList: '66e9ca5e0e5d1635fdb8388d', // ID of the list where the card will be created
-                        };
+                        return Promise.all([
+                            t.card('name'), // Get the name of the original card
+                            t.card('labels') // Get the labels of the original card
+                        ]).then(function([originalCardName, labels]) {
+                            const cardPromises = [];
 
-                        console.log("Card Data being sent:", cardData); // Log the card data being sent
-
-                        // Post the card data to Trello
-                        return t.request({
-                            url: 'cards', // API endpoint for creating cards
-                            method: 'POST', // HTTP method for the request
-                            body: JSON.stringify(cardData), // Convert card data to JSON format
-                            headers: {
-                                'Content-Type': 'application/json' // Set the content type to JSON
+                            // Check if there are labels
+                            if (labels.length === 0) {
+                                // If no labels, create a new card with the original card's name
+                                const cardData = {
+                                    name: originalCardName, // Use the original card name
+                                    idList: '66e9ca5e0e5d1635fdb8388d', // ID of the list where the card will be created
+                                };
+                                console.log("Creating card with no labels:", cardData);
+                                cardPromises.push(
+                                    t.request({
+                                        url: 'cards',
+                                        method: 'POST',
+                                        body: JSON.stringify(cardData),
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        }
+                                    })
+                                );
+                            } else {
+                                // If there are labels, create a new card for each label
+                                labels.forEach(label => {
+                                    const newCardName = `${originalCardName} ${label.name}`.trim();
+                                    const cardData = {
+                                        name: newCardName,
+                                        idList: '66e9ca5e0e5d1635fdb8388d',
+                                    };
+                                    console.log("Creating card with label:", cardData);
+                                    cardPromises.push(
+                                        t.request({
+                                            url: 'cards',
+                                            method: 'POST',
+                                            body: JSON.stringify(cardData),
+                                            headers: {
+                                                'Content-Type': 'application/json'
+                                            }
+                                        })
+                                    );
+                                });
                             }
-                        })
-                        .then(function(response) { // Handle successful response
-                            console.log("Response received:", response); // Log the response
-                            document.getElementById('feedback').innerText = "Sprint cards created successfully!"; // Update feedback message
-                        })
-                        .catch(function(error) { // Handle errors
-                            console.error("Error creating sprint cards:", error); // Log the error
-                            document.getElementById('error').innerText = "Error creating sprint cards: " + error.message; // Display error message
+
+                            // Wait for all card creation promises to resolve
+                            return Promise.all(cardPromises)
+                                .then(function(responses) {
+                                    console.log("All cards created successfully:", responses);
+                                })
+                                .catch(function(error) {
+                                    console.error("Error creating sprint cards:", error);
+                                });
                         });
                     }
                 }];
