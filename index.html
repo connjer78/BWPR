@@ -10,7 +10,7 @@
             'card-buttons': function(t, options) {
                 return [{
                     icon: 'https://connjer78.github.io/BWPR/assets/rocketship.PNG',
-                    text: 'Sprint It Nowish',
+                    text: 'Sprint This Card's Labels',
                     callback: function(t) {
                         // Show alert to the user
                         t.alert({
@@ -18,17 +18,11 @@
                             duration: 3
                         });
 
-                        // Card creation process
-                        return Promise.all([
-                            t.card('name'), // Get the name of the original card
-                            t.card('labels'), // Get the labels of the original card
-                            t.get('board', 'id') // Get the current board ID
-                        ]).then(function([originalCardName, labels, currentBoardId]) {
-                            const cardPromises = [];
-
-                            // Fetch all boards
-                            return t.get('member', 'boards', { filter: 'open' })
-                                .then(function(boards) {
+                        // Start the card creation process
+                        t.card('name', function(originalCardName) { // Get original card name
+                            t.card('labels', function(labels) { // Get original card labels
+                                // Get all boards for the user
+                                t.get('member', 'boards', { filter: 'open' }, function(boards) {
                                     console.log("Boards:", boards); // Log the boards array
 
                                     // Find the first board whose name includes "Sprint"
@@ -40,26 +34,47 @@
                                     }
 
                                     // Fetch the lists on the found "Sprint" board
-                                    return t.get(`board/${sprintBoard.id}/lists`, { filter: 'open' })
-                                        .then(function(lists) {
-                                            console.log("Lists on Sprint Board:", lists); // Log the lists array
+                                    t.get(`board/${sprintBoard.id}/lists`, { filter: 'open' }, function(lists) {
+                                        console.log("Lists on Sprint Board:", lists); // Log the lists array
 
-                                            // Ensure there are lists before accessing
-                                            if (lists.length === 0) {
-                                                console.error("No lists found on the Sprint board.");
-                                                return;
-                                            }
+                                        // Ensure there are lists before accessing
+                                        if (lists.length === 0) {
+                                            console.error("No lists found on the Sprint board.");
+                                            return;
+                                        }
 
-                                            const targetListId = lists[0].id; // Use the ID of the first list
+                                        const targetListId = lists[0].id; // Use the ID of the first list
+                                        const cardPromises = [];
 
-                                            // Check if there are labels
-                                            if (labels.length === 0) {
-                                                // If no labels, create a new card with the original card's name
+                                        // Check if there are labels
+                                        if (labels.length === 0) {
+                                            // If no labels, create a new card with the original card's name
+                                            const cardData = {
+                                                name: originalCardName, // Card name is the same as the original card
+                                                idList: targetListId, // Use the first list's ID on the "Sprint" board
+                                            };
+                                            console.log("Creating card with no labels:", cardData);
+                                            cardPromises.push(
+                                                t.request({
+                                                    url: 'cards',
+                                                    method: 'POST',
+                                                    body: JSON.stringify(cardData),
+                                                    headers: {
+                                                        'Content-Type': 'application/json'
+                                                    }
+                                                }, function(response) {
+                                                    console.log("Created card with no labels:", response);
+                                                })
+                                            );
+                                        } else {
+                                            // If there are labels, create a new card for each label
+                                            labels.forEach(label => {
+                                                const newCardName = `${originalCardName} ${label.name}`.trim();
                                                 const cardData = {
-                                                    name: originalCardName, // Card name is the same as the original card
+                                                    name: newCardName,
                                                     idList: targetListId, // Use the first list's ID on the "Sprint" board
                                                 };
-                                                console.log("Creating card with no labels:", cardData);
+                                                console.log("Creating card with label:", cardData);
                                                 cardPromises.push(
                                                     t.request({
                                                         url: 'cards',
@@ -68,40 +83,24 @@
                                                         headers: {
                                                             'Content-Type': 'application/json'
                                                         }
+                                                    }, function(response) {
+                                                        console.log("Created card with label:", response);
                                                     })
                                                 );
-                                            } else {
-                                                // If there are labels, create a new card for each label
-                                                labels.forEach(label => {
-                                                    const newCardName = `${originalCardName} ${label.name}`.trim();
-                                                    const cardData = {
-                                                        name: newCardName,
-                                                        idList: targetListId, // Use the first list's ID on the "Sprint" board
-                                                    };
-                                                    console.log("Creating card with label:", cardData);
-                                                    cardPromises.push(
-                                                        t.request({
-                                                            url: 'cards',
-                                                            method: 'POST',
-                                                            body: JSON.stringify(cardData),
-                                                            headers: {
-                                                                'Content-Type': 'application/json'
-                                                            }
-                                                        })
-                                                    );
-                                                });
-                                            }
+                                            });
+                                        }
 
-                                            // Wait for all card creation promises to resolve
-                                            return Promise.all(cardPromises)
-                                                .then(function(responses) {
-                                                    console.log("All cards created successfully:", responses);
-                                                })
-                                                .catch(function(error) {
-                                                    console.error("Error creating sprint cards:", error);
-                                                });
+                                        // Handle responses from card creation
+                                        cardPromises.forEach((promise) => {
+                                            promise.then(function(response) {
+                                                console.log("Card created successfully:", response);
+                                            }).catch(function(error) {
+                                                console.error("Error creating sprint cards:", error);
+                                            });
                                         });
+                                    });
                                 });
+                            });
                         });
                     }
                 }];
