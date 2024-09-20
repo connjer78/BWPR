@@ -10,7 +10,7 @@
             'card-buttons': function(t, options) {
                 return [{
                     icon: 'https://connjer78.github.io/BWPR/assets/rocketship.PNG',
-                    text: 'Sprint It!',
+                    text: 'Sprint It Nowish',
                     callback: function(t) {
                         // Show alert to the user
                         t.alert({
@@ -29,6 +29,8 @@
                             // Fetch all boards
                             return t.get('member', 'boards', { filter: 'open' })
                                 .then(function(boards) {
+                                    console.log("Boards:", boards); // Log the boards array
+
                                     // Find the first board whose name includes "Sprint"
                                     const sprintBoard = boards.find(board => board.name.includes('Sprint'));
 
@@ -40,8 +42,15 @@
                                     // Fetch the lists on the found "Sprint" board
                                     return t.get(`board/${sprintBoard.id}/lists`, { filter: 'open' })
                                         .then(function(lists) {
-                                            // Use the ID of the first list
-                                            const targetListId = lists[0].id;
+                                            console.log("Lists on Sprint Board:", lists); // Log the lists array
+
+                                            // Ensure there are lists before accessing
+                                            if (lists.length === 0) {
+                                                console.error("No lists found on the Sprint board.");
+                                                return;
+                                            }
+
+                                            const targetListId = lists[0].id; // Use the ID of the first list
 
                                             // Check if there are labels
                                             if (labels.length === 0) {
