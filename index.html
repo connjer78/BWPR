@@ -10,11 +10,11 @@
             'card-buttons': function(t, options) {
                 return [{
                     icon: 'https://connjer78.github.io/BWPR/assets/rocketship.PNG',
-                    text: 'Sprint That Shit!',
+                    text: 'Sprint It!',
                     callback: function(t) {
                         // Show alert to the user
                         t.alert({
-                            message: 'Creating Sprint Cards Now...',
+                            message: 'Creating Sprint Cards',
                             duration: 3
                         });
 
@@ -47,7 +47,7 @@
                                             if (labels.length === 0) {
                                                 // If no labels, create a new card with the original card's name
                                                 const cardData = {
-                                                    name: originalCardName, // Use the original card name
+                                                    name: originalCardName, // Card name is the same as the original card
                                                     idList: targetListId, // Use the first list's ID on the "Sprint" board
                                                 };
                                                 console.log("Creating card with no labels:", cardData);
