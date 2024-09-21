@@ -1,7 +1,7 @@
 {
     "name": "BWPR Sprint Power-Up",
     "description": "A Power-Up to create sprint cards from templates based on labels.",
-    "author": "Your Name",
+    "author": "Jeremy Conner",
     "version": "1.0.2",
     "icon": {
         "url": "https://connjer78.github.io/BWPR/assets/rocketship.PNG"
