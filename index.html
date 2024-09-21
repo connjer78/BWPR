@@ -1,65 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>BWPR Sprint Power-Up</title>
+    <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css">
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
 </head>
 <body>
     <script>
         var GRAY_ICON = 'https://connjer78.github.io/BWPR/assets/rocketship.PNG';
-
+        
         TrelloPowerUp.initialize({
             'card-buttons': function(t, options) {
                 return [{
                     icon: GRAY_ICON,
                     text: 'Sprint It!',
                     callback: function(t) {
-                        return t.popup({
-                            title: 'Create Sprint Cards',
-                            url: './sprint-creator.html',
-                            height: 300
+                        return t.alert({
+                            message: 'Button clicked!',
+                            duration: 3
                         });
                     }
                 }];
-            },
-            'authorization-status': function(t, options){
-                return t.get('member', 'private', 'authToken')
-                .then(function(authToken) {
-                    return { authorized: authToken != null };
-                });
-            },
-            'show-authorization': function(t, options){
-                return t.popup({
-                    title: 'Authorize Account',
-                    url: './auth.html',
-                    height: 140,
-                });
             }
         });
-
-        function createSprintCards(t, options) {
-            return t.getRestApi()
-                .getToken()
-                .then(function(token) {
-                    return t.card('id', 'name', 'labels', 'shortLink')
-                        .then(function(card) {
-                            return fetch(`https://api.trello.com/1/members/me/boards?key=${window.TrelloPowerUp.apiKey}&token=${token}`)
-                                .then(response => response.json())
-                                .then(boards => {
-                                    const sprintBoard = boards.find(board => board.name === 'Sprint');
-                                    if (!sprintBoard) throw new Error("Sprint board not found");
-                                    return fetch(`https://api.trello.com/1/boards/${sprintBoard.id}/lists?key=${window.TrelloPowerUp.apiKey}&token=${token}`);
-                                })
-                                .then(response => response.json())
-                                .then(lists => {
-                                    const backlogList = lists.find(list => list.name === 'Backlog');
-                                    if (!backlogList) throw new Error("Backlog list not found");
-                                    
-                                    const createCardPromises = card.labels
-                                        .filter(label => options.labels.includes(label.id))
-                                        .map(label => {
-                                            return fetch(`https://api.trello.com/1/cards
-</script>
+    </script>
 </body>
 </html>
 
