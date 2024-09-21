@@ -9,14 +9,14 @@
     "capabilities": [
         "card-buttons"
     ],
-    "card-buttons": {
+    "card-buttons": [{
         "title": "Sprint It!",
         "icon": {
             "dark": "https://connjer78.github.io/BWPR/assets/rocketship.PNG",
             "light": "https://connjer78.github.io/BWPR/assets/rocketship.PNG"
         },
         "callback": "./index.html"
-    },
+    }],
     "connectors": {
         "iframe": {
             "url": "./index.html"

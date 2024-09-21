@@ -90,12 +90,37 @@
             var members = Array.from(document.getElementById('members').selectedOptions).map(option => option.value);
             var dueDate = document.getElementById('due-date').value;
 
+            // Check if any labels are selected
+            if (selectedLabels.length === 0) {
+                alert("Please select at least one label to create sprint cards.");
+                return;
+            }
+
             t.closePopup();
-            t.arg('createSprintCards', {
-                labels: selectedLabels,
-                members: members,
-                dueDate: dueDate
-            });
+            
+            // Call the createSprintCards function directly
+            t.get('card', 'shared', 'createSprintCards')
+                .then(function(createSprintCards) {
+                    if (createSprintCards) {
+                        return t.call(createSprintCards, {
+                            labels: selectedLabels,
+                            members: members,
+                            dueDate: dueDate
+                        });
+                    } else {
+                        throw new Error('createSprintCards function not found');
+                    }
+                })
+                .then(function() {
+                    t.closePopup();
+                })
+                .catch(function(error) {
+                    console.error('Error creating sprint cards:', error);
+                    t.alert({
+                        message: 'There was an error creating sprint cards: ' + error.message,
+                        duration: 'long',
+                    });
+                });
         });
     </script>
 </body>
