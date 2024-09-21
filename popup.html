@@ -3,15 +3,66 @@
 <head>
   <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css">
   <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  <style>
+    .label-list {
+      margin-bottom: 10px;
+    }
+    .label-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .label-color {
+      width: 30px;
+      height: 15px;
+      display: inline-block;
+      margin-right: 5px;
+    }
+  </style>
 </head>
 <body>
   <h2>Create Sprint Cards</h2>
-  <p>This is where we'll add options for creating sprint cards.</p>
-  <button class="mod-primary" id="closeButton">Close</button>
+  <div id="labels">Loading labels...</div>
+  <button class="mod-primary" id="createButton">Create Sprint Cards</button>
   <script>
     var t = TrelloPowerUp.iframe();
     
-    document.getElementById('closeButton').addEventListener('click', function() {
+    t.render(function(){
+      return t.card('labels')
+        .then(function(card){
+          var labelList = document.getElementById('labels');
+          labelList.innerHTML = '<p>Select labels:</p>';
+          
+          card.labels.forEach(function(label){
+            var labelItem = document.createElement('div');
+            labelItem.className = 'label-item';
+            
+            var checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = 'label-' + label.id;
+            checkbox.value = label.id;
+            
+            var labelSpan = document.createElement('span');
+            labelSpan.className = 'label-color';
+            labelSpan.style.backgroundColor = label.color;
+            
+            var labelText = document.createElement('label');
+            labelText.htmlFor = 'label-' + label.id;
+            labelText.textContent = label.name || label.color;
+            
+            labelItem.appendChild(checkbox);
+            labelItem.appendChild(labelSpan);
+            labelItem.appendChild(labelText);
+            labelList.appendChild(labelItem);
+          });
+        });
+    });
+
+    document.getElementById('createButton').addEventListener('click', function() {
+      var selectedLabels = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+        .map(checkbox => checkbox.value);
+      
+      console.log('Selected labels:', selectedLabels);
       t.closePopup();
     });
   </script>
