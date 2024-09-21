@@ -1,111 +1,101 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Trello Power-Up</title>
+    <title>BWPR Sprint Creator</title>
+    <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css">
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
+    <style>
+        .member-select, .date-input {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .label-list {
+            margin-bottom: 10px;
+        }
+        .label-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .label-color {
+            width: 30px;
+            height: 15px;
+            display: inline-block;
+            margin-right: 5px;
+        }
+    </style>
 </head>
 <body>
+    <form id="sprint-form">
+        <label>Select Labels:</label>
+        <div id="label-list" class="label-list"></div>
+        
+        <label for="members">Assign Members:</label>
+        <select id="members" class="member-select" multiple></select>
+        
+        <label for="due-date">Due Date:</label>
+        <input type="date" id="due-date" class="date-input">
+        
+        <button type="submit" class="mod-primary">Create Sprint Cards</button>
+    </form>
+
     <script>
-        TrelloPowerUp.initialize({
-            'card-buttons': function(t, options) {
-                return [{
-                    icon: 'https://connjer78.github.io/BWPR/assets/rocketship.PNG',
-                    text: 'Sprint This Card's Labels',
-                    condition: 'admin",
-                    callback: function(t) {
-                        // Show alert to the user
-                        t.alert({
-                            message: 'Creating Sprint Cards',
-                            duration: 3
-                        });
+        var t = TrelloPowerUp.iframe();
 
-                        // Start the card creation process
-                        t.card('name', function(originalCardName) { // Get original card name
-                            t.card('labels', function(labels) { // Get original card labels
-                                // Get all boards for the user
-                                t.get('member', 'boards', { filter: 'open' }, function(boards) {
-                                    console.log("Boards:", boards); // Log the boards array
+        t.render(function(){
+            return Promise.all([
+                t.card('labels'),
+                t.board('members')
+            ])
+            .then(function([card, board]){
+                // Populate label checkboxes
+                var labelList = document.getElementById('label-list');
+                card.labels.forEach(function(label){
+                    var labelItem = document.createElement('div');
+                    labelItem.className = 'label-item';
+                    
+                    var checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = 'label-' + label.id;
+                    checkbox.value = label.id;
+                    
+                    var labelSpan = document.createElement('span');
+                    labelSpan.className = 'label-color';
+                    labelSpan.style.backgroundColor = label.color;
+                    
+                    var labelText = document.createElement('label');
+                    labelText.htmlFor = 'label-' + label.id;
+                    labelText.textContent = label.name;
+                    
+                    labelItem.appendChild(checkbox);
+                    labelItem.appendChild(labelSpan);
+                    labelItem.appendChild(labelText);
+                    labelList.appendChild(labelItem);
+                });
 
-                                    // Find the first board whose name includes "Sprint"
-                                    const sprintBoard = boards.find(board => board.name.includes('Sprint'));
+                // Populate member select
+                var memberSelect = document.getElementById('members');
+                board.members.forEach(function(member){
+                    var option = document.createElement('option');
+                    option.value = member.id;
+                    option.text = member.fullName;
+                    memberSelect.appendChild(option);
+                });
+            });
+        });
 
-                                    if (!sprintBoard) {
-                                        console.error("No board containing 'Sprint' found.");
-                                        return;
-                                    }
+        document.getElementById('sprint-form').addEventListener('submit', function(event){
+            event.preventDefault();
+            var selectedLabels = Array.from(document.querySelectorAll('#label-list input:checked')).map(checkbox => checkbox.value);
+            var members = Array.from(document.getElementById('members').selectedOptions).map(option => option.value);
+            var dueDate = document.getElementById('due-date').value;
 
-                                    // Fetch the lists on the found "Sprint" board
-                                    t.get(`board/${sprintBoard.id}/lists`, { filter: 'open' }, function(lists) {
-                                        console.log("Lists on Sprint Board:", lists); // Log the lists array
-
-                                        // Ensure there are lists before accessing
-                                        if (lists.length === 0) {
-                                            console.error("No lists found on the Sprint board.");
-                                            return;
-                                        }
-
-                                        const targetListId = lists[0].id; // Use the ID of the first list
-                                        const cardPromises = [];
-
-                                        // Check if there are labels
-                                        if (labels.length === 0) {
-                                            // If no labels, create a new card with the original card's name
-                                            const cardData = {
-                                                name: originalCardName, // Card name is the same as the original card
-                                                idList: targetListId, // Use the first list's ID on the "Sprint" board
-                                            };
-                                            console.log("Creating card with no labels:", cardData);
-                                            cardPromises.push(
-                                                t.request({
-                                                    url: 'cards',
-                                                    method: 'POST',
-                                                    body: JSON.stringify(cardData),
-                                                    headers: {
-                                                        'Content-Type': 'application/json'
-                                                    }
-                                                }, function(response) {
-                                                    console.log("Created card with no labels:", response);
-                                                })
-                                            );
-                                        } else {
-                                            // If there are labels, create a new card for each label
-                                            labels.forEach(label => {
-                                                const newCardName = `${originalCardName} ${label.name}`.trim();
-                                                const cardData = {
-                                                    name: newCardName,
-                                                    idList: targetListId, // Use the first list's ID on the "Sprint" board
-                                                };
-                                                console.log("Creating card with label:", cardData);
-                                                cardPromises.push(
-                                                    t.request({
-                                                        url: 'cards',
-                                                        method: 'POST',
-                                                        body: JSON.stringify(cardData),
-                                                        headers: {
-                                                            'Content-Type': 'application/json'
-                                                        }
-                                                    }, function(response) {
-                                                        console.log("Created card with label:", response);
-                                                    })
-                                                );
-                                            });
-                                        }
-
-                                        // Handle responses from card creation
-                                        cardPromises.forEach((promise) => {
-                                            promise.then(function(response) {
-                                                console.log("Card created successfully:", response);
-                                            }).catch(function(error) {
-                                                console.error("Error creating sprint cards:", error);
-                                            });
-                                        });
-                                    });
-                                });
-                            });
-                        });
-                    }
-                }];
-            }
+            t.closePopup();
+            t.arg('createSprintCards', {
+                labels: selectedLabels,
+                members: members,
+                dueDate: dueDate
+            });
         });
     </script>
 </body>
