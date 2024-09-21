@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css">
+  <script src="https://p.trellocdn.com/power-up.min.js"></script>
+</head>
+<body>
+  <h2>Create Sprint Cards</h2>
+  <p>This is where we'll add options for creating sprint cards.</p>
+  <button class="mod-primary" id="closeButton">Close</button>
+  <script>
+    var t = TrelloPowerUp.iframe();
+    
+    document.getElementById('closeButton').addEventListener('click', function() {
+      t.closePopup();
+    });
+  </script>
+</body>
+</html>
