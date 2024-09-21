@@ -14,9 +14,10 @@
                     icon: GRAY_ICON,
                     text: 'Sprint It!',
                     callback: function(t) {
-                        return t.alert({
-                            message: 'Button clicked!',
-                            duration: 3
+                        return t.popup({
+                            title: 'Create Sprint Cards',
+                            url: './popup.html',
+                            height: 300
                         });
                     }
                 }];
