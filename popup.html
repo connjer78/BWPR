@@ -27,6 +27,20 @@
   <script>
     var t = TrelloPowerUp.iframe();
     
+    // Trello color mapping
+    var colorMap = {
+      'green': '#61bd4f',
+      'yellow': '#f2d600',
+      'orange': '#ff9f1a',
+      'red': '#eb5a46',
+      'purple': '#c377e0',
+      'blue': '#0079bf',
+      'sky': '#00c2e0',
+      'lime': '#51e898',
+      'pink': '#ff78cb',
+      'black': '#344563'
+    };
+
     t.render(function(){
       return t.card('labels')
         .then(function(card){
@@ -44,7 +58,7 @@
             
             var labelSpan = document.createElement('span');
             labelSpan.className = 'label-color';
-            labelSpan.style.backgroundColor = label.color;
+            labelSpan.style.backgroundColor = colorMap[label.color] || label.color;
             
             var labelText = document.createElement('label');
             labelText.htmlFor = 'label-' + label.id;
