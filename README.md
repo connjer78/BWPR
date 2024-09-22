@@ -13,6 +13,7 @@
 - Copies selected labels to the new cards
 - Correctly handles timezone differences for due dates
 - Provides a spacious popup interface with all options visible without scrolling
+- Adds a link from each new card back to the source card as an attachment
 
 ## Files
 - `index.html`: The connector file for the Power-Up (active)
@@ -65,6 +66,7 @@ This Power-Up is functional and ready for use. Here are the key points about its
   - Expanded member selection interface for easy assignment of multiple members.
 - **Card Creation**: New cards are automatically created in the same list as the original card.
 - **Label Copying**: Selected labels are copied to the new cards.
+- **Linking**: Implements links from new cards back to the source card for improved traceability
 
 Future improvements may include:
 - Additional customization options

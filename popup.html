@@ -226,7 +226,21 @@
                 idMembers: selectedMembers,
                 idLabels: [labelId]
               })
-            }).then(response => response.json());
+            })
+            .then(response => response.json())
+            .then(newCard => {
+              // Add source card as attachment to new card
+              return fetch(`https://api.trello.com/1/cards/${newCard.id}/attachments?key=${TRELLO_APP_KEY}&token=${token}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  name: `Source: ${card.name}`,
+                  url: `https://trello.com/c/${card.shortLink}`
+                })
+              }).then(() => newCard);
+            });
           });
 
           return Promise.all(createPromises);
