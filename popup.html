@@ -277,27 +277,45 @@
           return fetch(`https://api.trello.com/1/lists/${templatesList.id}/cards?key=${TRELLO_APP_KEY}&token=${token}`)
             .then(response => response.json())
             .then(templateCards => {
+              console.log('Template cards:', templateCards);
+              console.log('Selected labels:', selectedLabels);
+              console.log('Source card labels:', sourceCard.labels);
+
               const createPromises = selectedLabels.map(labelData => {
-                const templateCard = templateCards.find(card => card.idLabels.includes(labelData.id));
+                const sourceLabel = sourceCard.labels.find(l => l.id === labelData.id);
+                if (!sourceLabel) {
+                  console.warn(`No matching source label found for ID ${labelData.id}`);
+                  return Promise.resolve();
+                }
+
+                const templateCard = templateCards.find(card => 
+                  card.name.toLowerCase() === sourceLabel.name.toLowerCase()
+                );
+
                 if (templateCard) {
+                  console.log(`Found matching template card for label "${sourceLabel.name}":`, templateCard);
                   return createCardFromTemplate(sourceCard, templateCard, labelData, selectedMembers, backlogList, token);
                 } else {
-                  console.warn(`No template found for label ${labelData.id}`);
+                  console.warn(`No template found for label "${sourceLabel.name}"`);
                   return Promise.resolve();
                 }
               });
+
               return Promise.all(createPromises);
             });
         });
     }
 
     function createCardFromTemplate(sourceCard, templateCard, labelData, selectedMembers, backlogList, token) {
-      const newCardName = `${sourceCard.name}: ${templateCard.name}`;
+      const sourceLabel = sourceCard.labels.find(l => l.id === labelData.id);
+      const newCardName = `${sourceCard.name}: ${sourceLabel ? sourceLabel.name : 'Unnamed Label'}`;
       let dueDate = null;
       if (labelData.dueDate) {
         const [year, month, day] = labelData.dueDate.split('-').map(Number);
         dueDate = new Date(year, month - 1, day, 17, 0, 0, 0).toISOString();
       }
+
+      console.log(`Creating new card: "${newCardName}" based on template: "${templateCard.name}"`);
 
       return fetch(`https://api.trello.com/1/cards?key=${TRELLO_APP_KEY}&token=${token}`, {
         method: 'POST',
