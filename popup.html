@@ -203,7 +203,7 @@
             throw new Error('Not authorized');
           }
           return Promise.all([
-            t.card('all'),
+            t.card('all'),  // This will fetch all card data including the description
             t.list('id', 'name'),
             t.getRestApi().getToken()
           ]);
@@ -219,7 +219,7 @@
               },
               body: JSON.stringify({
                 name: newCardName,
-                desc: `Created from "${card.name}"`,
+                desc: card.desc,  // Use the source card's description
                 pos: 'top',
                 due: dueDate,
                 idList: list.id,

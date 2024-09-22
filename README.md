@@ -14,6 +14,7 @@
 - Correctly handles timezone differences for due dates
 - Provides a spacious popup interface with all options visible without scrolling
 - Adds a link from each new card back to the source card as an attachment
+- Copies the description from the source card to each new card
 
 ## Files
 - `index.html`: The connector file for the Power-Up (active)
@@ -67,6 +68,7 @@ This Power-Up is functional and ready for use. Here are the key points about its
 - **Card Creation**: New cards are automatically created in the same list as the original card.
 - **Label Copying**: Selected labels are copied to the new cards.
 - **Linking**: Implements links from new cards back to the source card for improved traceability
+- **Content Copying**: Duplicates the description from the source card to maintain context in new cards
 
 Future improvements may include:
 - Additional customization options
