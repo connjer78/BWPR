@@ -50,6 +50,7 @@
     <select id="members" multiple></select>
   </div>
   <button class="mod-primary" id="createButton">Create Sprint Cards</button>
+  <div id="authStatus"></div>
   <script>
     var TRELLO_APP_KEY = '18f0d2661292b35d137bdaa4013eb249';
     var t = TrelloPowerUp.iframe({
@@ -86,6 +87,21 @@
     function resizePopup() {
       t.sizeTo(document.body).done();
     }
+
+    // Check authorization status when the popup opens
+    t.getRestApi()
+      .isAuthorized()
+      .then(function(isAuthorized) {
+        if (isAuthorized) {
+          document.getElementById('authStatus').textContent = 'Authorized';
+        } else {
+          document.getElementById('authStatus').textContent = 'Not authorized. Please close this popup and click "Sprint It!" again to authorize.';
+          throw new Error('Not authorized');
+        }
+      })
+      .catch(function(error) {
+        console.error('Authorization check failed:', error);
+      });
 
     t.render(function(){
       return Promise.all([
@@ -154,14 +170,6 @@
       this.textContent = 'Creating Cards...';
 
       t.getRestApi()
-        .isAuthorized()
-        .then(function(isAuthorized) {
-          if (isAuthorized) {
-            return t.getRestApi();
-          } else {
-            throw new Error('Not authorized');
-          }
-        })
         .then(function(restApi) {
           return t.card('idList')
             .then(function(card) {

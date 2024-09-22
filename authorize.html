@@ -6,19 +6,29 @@
   </head>
   <body>
     <button id="authorizeButton" type="button" class="mod-primary">Authorize</button>
+    <p id="status"></p>
     <script>
       var t = window.TrelloPowerUp.iframe();
       var TRELLO_APP_KEY = '18f0d2661292b35d137bdaa4013eb249';
 
+      function updateStatus(message) {
+        document.getElementById('status').textContent = message;
+      }
+
       document.getElementById('authorizeButton').addEventListener('click', function() {
+        updateStatus('Authorizing...');
         t.authorize(TRELLO_APP_KEY, {
           scope: 'read,write',
           expiration: 'never',
           success: function() {
-            t.closePopup();
+            updateStatus('Authorization successful!');
+            setTimeout(function() {
+              t.closePopup();
+            }, 1000);
           },
-          error: function() {
-            console.log('Failed to authorize');
+          error: function(err) {
+            console.error('Failed to authorize:', err);
+            updateStatus('Authorization failed. Please try again.');
           }
         });
       });
