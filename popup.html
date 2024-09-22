@@ -44,7 +44,7 @@
     </div>
     <div class="section">
       <h3>Due Date</h3>
-      <input type="date" id="dueDate">
+      <input type="datetime-local" id="dueDate">
     </div>
     <div class="section">
       <h3>Members</h3>
@@ -162,10 +162,13 @@
     document.getElementById('createButton').addEventListener('click', function() {
       var selectedLabels = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
         .map(checkbox => checkbox.value);
-      var dueDate = document.getElementById('dueDate').value;
+      var dueDateInput = document.getElementById('dueDate').value;
       var selectedMembers = Array.from(document.getElementById('members').selectedOptions)
         .map(option => option.value);
       
+      // Convert the local date to UTC
+      var dueDate = dueDateInput ? new Date(dueDateInput).toISOString() : null;
+
       this.disabled = true;
       this.textContent = 'Creating Cards...';
 
