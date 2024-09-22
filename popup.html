@@ -28,54 +28,54 @@
 </head>
 <body>
   <h2>Create Sprint Cards</h2>
-  <div class="update-message">Discovering all Trello colors. (Updated version V4)</div>
+  <div class="update-message">Debugging color issues. (Updated version V5)</div>
   <div id="labels">Loading labels...</div>
   <button class="mod-primary" id="createButton">Create Sprint Cards</button>
   <script>
     var t = TrelloPowerUp.iframe();
     
-    // Object to store all unique colors
-    var allColors = {};
+    // Immediately log a message to check if console.log is working
+    console.log('Popup script is running');
 
     t.render(function(){
+      console.log('t.render function called');
       return t.card('labels')
         .then(function(card){
+          console.log('Card data received:', card);
           var labelList = document.getElementById('labels');
           labelList.innerHTML = '<p>Select labels:</p>';
           
-          card.labels.forEach(function(label){
-            var labelItem = document.createElement('div');
-            labelItem.className = 'label-item';
-            
-            var checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = 'label-' + label.id;
-            checkbox.value = label.id;
-            
-            var labelSpan = document.createElement('span');
-            labelSpan.className = 'label-color';
-            labelSpan.style.backgroundColor = label.color;
-            
-            var labelText = document.createElement('label');
-            labelText.htmlFor = 'label-' + label.id;
-            labelText.textContent = `${label.name || 'No name'} (${label.color})`;
-            
-            labelItem.appendChild(checkbox);
-            labelItem.appendChild(labelSpan);
-            labelItem.appendChild(labelText);
-            labelList.appendChild(labelItem);
-
-            // Add color to allColors object
-            if (!allColors[label.color]) {
-              allColors[label.color] = true;
-            }
-
-            // Debug logging
-            console.log(`Label: ${label.name}, Color: ${label.color}`);
-          });
-
-          // Log all unique colors
-          console.log('All unique colors:', Object.keys(allColors));
+          if (card.labels && card.labels.length > 0) {
+            card.labels.forEach(function(label){
+              console.log('Processing label:', label);
+              var labelItem = document.createElement('div');
+              labelItem.className = 'label-item';
+              
+              var checkbox = document.createElement('input');
+              checkbox.type = 'checkbox';
+              checkbox.id = 'label-' + label.id;
+              checkbox.value = label.id;
+              
+              var labelSpan = document.createElement('span');
+              labelSpan.className = 'label-color';
+              labelSpan.style.backgroundColor = label.color || 'gray';
+              
+              var labelText = document.createElement('label');
+              labelText.htmlFor = 'label-' + label.id;
+              labelText.textContent = `${label.name || 'No name'} (${label.color || 'No color'})`;
+              
+              labelItem.appendChild(checkbox);
+              labelItem.appendChild(labelSpan);
+              labelItem.appendChild(labelText);
+              labelList.appendChild(labelItem);
+            });
+          } else {
+            console.log('No labels found on this card');
+            labelList.innerHTML += '<p>No labels found on this card.</p>';
+          }
+        })
+        .catch(function(error) {
+          console.error('Error fetching card data:', error);
         });
     });
 
