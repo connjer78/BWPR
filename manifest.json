@@ -1,6 +1,7 @@
 {
     "name": "BWPR Sprint Power-Up",
     "description": "A simple Power-Up",
+    "key": "18f0d2661292b35d137bdaa4013eb249",
     "icon": {
         "url": "https://connjer78.github.io/BWPR/assets/rocketship.PNG"
     },

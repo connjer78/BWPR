@@ -6,17 +6,28 @@
 </head>
 <body>
     <script>
-        var t = window.TrelloPowerUp.iframe();
+        var TRELLO_APP_KEY = '18f0d2661292b35d137bdaa4013eb249'; // Replace with your actual Trello API key
+        var t = window.TrelloPowerUp.iframe({
+            appKey: TRELLO_APP_KEY,
+            appName: 'BWPR Sprint Power-Up'
+        });
+
         t.render(function(){
-            t.getRestApi()
-                .authorize({ scope: 'read,write' })
-                .then(function(t) {
-                    console.log('Authorization successful');
-                    t.closePopup();
-                })
-                .catch(TrelloPowerUp.restApiError.AuthDeniedError, function() {
-                    console.log('Authorization denied');
-                });
+            // Add a button for the user to click
+            var authorizeButton = document.createElement('button');
+            authorizeButton.textContent = 'Authorize Power-Up';
+            authorizeButton.addEventListener('click', function() {
+                t.getRestApi()
+                    .authorize({ scope: 'read,write' })
+                    .then(function() {
+                        console.log('Authorization successful');
+                        t.closePopup();
+                    })
+                    .catch(function(error) {
+                        console.error('Authorization error:', error);
+                    });
+            });
+            document.body.appendChild(authorizeButton);
         });
     </script>
 </body>
