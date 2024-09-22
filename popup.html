@@ -221,6 +221,9 @@
       var selectedMembers = Array.from(document.getElementById('members').selectedOptions)
         .map(option => option.value);
 
+      console.log('Selected labels:', selectedLabels);
+      console.log('Selected members:', selectedMembers);
+
       this.disabled = true;
       this.textContent = 'Creating Cards...';
 
@@ -231,8 +234,10 @@
           
           return t.card('all')
             .then(sourceCard => {
+              console.log('Source card:', sourceCard);
               var createPromises = selectedLabels.map(function(labelData) {
                 var label = sourceCard.labels.find(l => l.id === labelData.id);
+                console.log('Creating card for label:', label);
                 var newCardName = `${sourceCard.name}: ${label.name || label.color}`;
                 var dueDate = null;
                 if (labelData.dueDate) {
@@ -243,6 +248,14 @@
                 
                 return t.getRestApi().getToken()
                   .then(token => {
+                    console.log('Creating card with data:', {
+                      name: newCardName,
+                      desc: sourceCard.desc,
+                      due: dueDate,
+                      idList: backlogList.id,
+                      idMembers: selectedMembers,
+                      idLabels: [labelData.id]
+                    });
                     return fetch(`https://api.trello.com/1/cards?key=${TRELLO_APP_KEY}&token=${token}`, {
                       method: 'POST',
                       headers: {
@@ -253,13 +266,22 @@
                         desc: sourceCard.desc,
                         pos: 'top',
                         due: dueDate,
-                        idList: backlogList.id,  // Use the Backlog list ID
+                        idList: backlogList.id,
                         idMembers: selectedMembers,
                         idLabels: [labelData.id]
                       })
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                      if (!response.ok) {
+                        return response.text().then(text => {
+                          console.error('Error response:', text);
+                          throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
+                        });
+                      }
+                      return response.json();
+                    })
                     .then(newCard => {
+                      console.log('New card created:', newCard);
                       // Add source card as attachment to new card
                       return fetch(`https://api.trello.com/1/cards/${newCard.id}/attachments?key=${TRELLO_APP_KEY}&token=${token}`, {
                         method: 'POST',
