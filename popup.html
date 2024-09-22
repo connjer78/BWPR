@@ -158,31 +158,36 @@
         .then(function(card) {
           var listId = card.idList;
           
-          // Get the authenticated REST API object
-          return t.getRestApi()
-            .then(function(restApi) {
+          // Authorize and get a token
+          return t.authorize({ scope: 'write' })
+            .then(function(token) {
+              var createCard = function(name, labelIds) {
+                return fetch('https://api.trello.com/1/cards', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    name: name,
+                    idList: listId,
+                    idLabels: labelIds,
+                    due: dueDate,
+                    idMembers: selectedMembers,
+                    key: TRELLO_APP_KEY,
+                    token: token
+                  })
+                }).then(res => res.json());
+              };
+
               var cardCreationPromises = [];
 
               if (selectedLabels.length === 0) {
                 // Create a single card with no labels
-                cardCreationPromises.push(
-                  restApi.post('/cards', {
-                    name: 'New Sprint Card',
-                    idList: listId,
-                    due: dueDate,
-                    idMembers: selectedMembers
-                  })
-                );
+                cardCreationPromises.push(createCard('New Sprint Card', []));
               } else {
                 // Create a card for each selected label
                 cardCreationPromises = selectedLabels.map(function(labelId) {
-                  return restApi.post('/cards', {
-                    name: 'Sprint Card for ' + labelId,
-                    idList: listId,
-                    idLabels: [labelId],
-                    due: dueDate,
-                    idMembers: selectedMembers
-                  });
+                  return createCard('Sprint Card for ' + labelId, [labelId]);
                 });
               }
 
@@ -202,7 +207,7 @@
           document.body.appendChild(messageDiv);
 
           // Resize popup to fit new content
-          resizePopup();
+          t.sizeTo(document.body);
 
           // Close the popup after a short delay
           setTimeout(function() {
@@ -226,7 +231,7 @@
           this.textContent = 'Create Sprint Cards';
 
           // Resize popup to fit new content
-          resizePopup();
+          t.sizeTo(document.body);
         });
     });
   </script>
