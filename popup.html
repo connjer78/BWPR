@@ -35,9 +35,11 @@
       width: 100%;
       height: 100px;
     }
+    .error { color: red; }
   </style>
 </head>
 <body>
+  <div id="error" class="error"></div>
   <h2>Create Sprint Cards</h2>
   <div class="update-message">Cleaned up label display. (Updated version V10)</div>
   <div id="labels">Loading labels...</div>
@@ -87,6 +89,52 @@
     function resizePopup() {
       t.sizeTo(document.body).done();
     }
+
+    function showError(message) {
+      document.getElementById('error').textContent = message;
+    }
+
+    // Load labels
+    t.card('labels')
+      .then(function(card) {
+        console.log('Labels:', card.labels);
+        var labelsContainer = document.getElementById('labels');
+        card.labels.forEach(function(label) {
+          var checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.id = 'label-' + label.id;
+          checkbox.value = label.id;
+          
+          var label = document.createElement('label');
+          label.htmlFor = 'label-' + label.id;
+          label.textContent = label.name || label.color;
+          
+          labelsContainer.appendChild(checkbox);
+          labelsContainer.appendChild(label);
+          labelsContainer.appendChild(document.createElement('br'));
+        });
+      })
+      .catch(function(error) {
+        console.error('Error loading labels:', error);
+        showError('Error loading labels: ' + error.message);
+      });
+
+    // Load members
+    t.board('members')
+      .then(function(board) {
+        console.log('Members:', board.members);
+        var membersSelect = document.getElementById('members');
+        board.members.forEach(function(member) {
+          var option = document.createElement('option');
+          option.value = member.id;
+          option.textContent = member.fullName;
+          membersSelect.appendChild(option);
+        });
+      })
+      .catch(function(error) {
+        console.error('Error loading members:', error);
+        showError('Error loading members: ' + error.message);
+      });
 
     document.getElementById('createButton').addEventListener('click', function() {
       var selectedLabels = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
