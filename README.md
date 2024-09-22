@@ -8,6 +8,7 @@
 - Creates new cards based on the labels of the selected card
 - Names new cards in the format "{sourceCardName}: {labelName}"
 - Allows selection of due date for the new cards (time is automatically set to 5:00 PM local time)
+- Provides an expanded member selection interface for easy assignment of multiple members
 - Automatically creates cards in the same list as the original card
 - Copies selected labels to the new cards
 - Correctly handles timezone differences for due dates
@@ -44,7 +45,31 @@ Note: The `authorize-callback.html` file is currently inactive but may be implem
 Ensure that your `manifest.json` file is correctly set up with the necessary permissions and capabilities for the Power-Up.
 
 ## Development Status
-This Power-Up is functional and can successfully create new cards based on labels. It includes user authorization for enhanced security and uses the Trello REST API for card creation. The Power-Up operates on the card and board level, creating new cards within the same board and list as the original card. It displays all available label colors, including light and dark variants, for a comprehensive user experience. New cards are named using the format "{sourceCardName}: {labelName}" for clear identification. Due dates can be set easily with a single date picker, and are automatically set to 5:00 PM in the user's local time on the selected date, ensuring consistency and relevance across different timezones. The date handling is robust and independent of the time of day when the Power-Up is used. The user interface has been optimized for ease of use, with all options visible without the need for scrolling. Future improvements may include more customization options and refined error handling.
+
+This Power-Up is functional and ready for use. Here are the key points about its current status:
+
+- **Functionality**: Successfully creates new cards based on labels from existing cards.
+- **Security**: Includes user authorization for enhanced security.
+- **API Integration**: Utilizes the Trello REST API for card creation and management.
+- **Scope**: Operates on both card and board levels within Trello.
+- **Label Handling**: Displays and uses all available label colors, including light and dark variants.
+- **Card Naming**: New cards are named using the format "{sourceCardName}: {labelName}" for clear identification.
+- **Due Date Handling**: 
+  - Allows easy selection of due dates with a single date picker.
+  - Automatically sets due time to 5:00 PM in the user's local time.
+  - Ensures consistency across different timezones.
+  - Robust date handling independent of usage time.
+- **User Interface**:
+  - Optimized for ease of use with a spacious layout.
+  - All options visible without scrolling.
+  - Expanded member selection interface for easy assignment of multiple members.
+- **Card Creation**: New cards are automatically created in the same list as the original card.
+- **Label Copying**: Selected labels are copied to the new cards.
+
+Future improvements may include:
+- Additional customization options
+- Refined error handling
+- [Any other specific improvements you're considering]
 
 ## Contributing
 This is a personal project and is not currently open for contributions.
