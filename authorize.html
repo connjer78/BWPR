@@ -1,29 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Authorize</title>
+<html>
+<head>
     <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css">
-  </head>
-  <body>
-    <button id="authorizeButton" class="mod-primary">Authorize Sprint Cards Power-Up</button>
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
+</head>
+<body>
     <script>
-      var t = window.TrelloPowerUp.iframe({
-        appKey: '18f0d2661292b35d137bdaa4013eb249',
-        appName: 'Sprint Cards Power-Up'
-      });
-      
-      document.getElementById('authorizeButton').addEventListener('click', function() {
-        t.getRestApi()
-          .authorize({ scope: 'read,write,account,organization' })
-          .then(function() {
-            t.closePopup();
-          })
-          .catch(TrelloPowerUp.restApiError.AuthDeniedError, function() {
-            console.log('Authorization cancelled');
-          });
-      });
+        var t = window.TrelloPowerUp.iframe();
+        t.render(function(){
+            t.getRestApi()
+                .authorize({ scope: 'read,write' })
+                .then(function(t) {
+                    console.log('Authorization successful');
+                    t.closePopup();
+                })
+                .catch(TrelloPowerUp.restApiError.AuthDeniedError, function() {
+                    console.log('Authorization denied');
+                });
+        });
     </script>
-  </body>
+</body>
 </html>

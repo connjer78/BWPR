@@ -7,15 +7,8 @@
     "capabilities": [
         "card-buttons"
     ],
-    "connectors": {
-        "iframe": {
-            "url": "https://connjer78.github.io/BWPR/index.html"
-        }
-    },
-    "permissions": [
+    "scopes": [
         "read",
-        "write",
-        "account",
-        "organization"
+        "write"
     ]
 }
