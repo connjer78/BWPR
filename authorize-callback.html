@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  </head>
+  <body>
+    <script>
+      var token = new URLSearchParams(window.location.hash.substr(1)).get('token');
+      if (token) {
+        window.opener.postMessage({ type: 'authorization-success', token: token }, window.location.origin);
+      } else {
+        window.opener.postMessage({ type: 'authorization-failure' }, window.location.origin);
+      }
+      window.close();
+    </script>
+  </body>
+</html>
