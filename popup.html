@@ -6,7 +6,7 @@
   <style>
     body { 
       padding: 10px; 
-      overflow-y: auto;  /* Allow vertical scrolling if content exceeds height */
+      overflow-y: auto; 
     }
     .error { color: red; margin-bottom: 10px; }
     .label-container { display: flex; align-items: center; margin-bottom: 5px; }
@@ -19,11 +19,11 @@
     }
     .label-name { color: #000; }
     .section { 
-      margin-bottom: 15px;  /* Reduced margin between sections */
+      margin-bottom: 15px; 
     }
     #members {
       width: 100%;
-      height: 120px;  /* Increased height */
+      height: 120px; 
       margin-bottom: 15px;
     }
     .help-text {
@@ -38,16 +38,19 @@
     #createButton {
       width: 100%;
     }
-    #dueDate, #dueTime {
-      width: calc(50% - 5px);
-      margin-right: 5px;
+    .label-date-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
     }
-    #dueTime {
-      margin-right: 0;
+    .label-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
     }
-    /* Optional: Improve the appearance of the select box */
-    #members option {
-      padding: 5px;
+    .date-input {
+      margin-left: 10px;
+      width: 130px;
     }
   </style>
 </head>
@@ -55,16 +58,11 @@
   <div id="error" class="error"></div>
   <div id="content">
     <div class="section">
-      <h3>Labels</h3>
-      <div id="labels"></div>
-    </div>
-    <div class="section">
-      <h3>Due Date</h3>
-      <input type="date" id="dueDate">
+      <h3>Labels and Due Dates</h3>
+      <div id="labels-and-dates"></div>
     </div>
     <div class="section">
       <h3>Members</h3>
-      <label for="members">Select Members:</label>
       <select id="members" multiple>
         <!-- Options will be populated dynamically -->
       </select>
@@ -82,9 +80,8 @@
       appName: 'Sprint Cards Power-Up'
     });
 
-    // Function to get the color for a label
     function getLabelColor(color) {
-      const colorMap = {
+      const colors = {
         'yellow': '#f2d600',
         'purple': '#c377e0',
         'blue': '#0079bf',
@@ -94,39 +91,20 @@
         'black': '#344563',
         'sky': '#00c2e0',
         'pink': '#ff78cb',
-        'lime': '#51e898',
-        // Add these new colors
-        'yellow_dark': '#d9b51c',
-        'yellow_light': '#f5ea92',
-        'orange_dark': '#d29034',
-        'orange_light': '#fad29c',
-        'red_dark': '#b04632',
-        'red_light': '#efb3ab',
-        'purple_dark': '#89609e',
-        'purple_light': '#dfc0eb',
-        'blue_dark': '#055a8c',
-        'blue_light': '#8bbdd9',
-        'sky_dark': '#0098b7',
-        'sky_light': '#9adbe8',
-        'green_dark': '#519839',
-        'green_light': '#b3f1d0',
-        'pink_dark': '#c9558f',
-        'pink_light': '#ffcee0',
-        'lime_dark': '#4bbf6b',
-        'lime_light': '#b6f1cb',
-        'black_dark': '#091e42',
-        'black_light': '#97a0af'
+        'lime': '#51e898'
       };
-      return colorMap[color] || '#b3bac5'; // default gray if color not found
+      return colors[color] || color;
     }
 
-    // Function to populate labels
     function populateLabels() {
       return t.card('labels')
         .then(function(card) {
-          var labelsContainer = document.getElementById('labels');
-          labelsContainer.innerHTML = '';
+          var labelsAndDatesContainer = document.getElementById('labels-and-dates');
+          labelsAndDatesContainer.innerHTML = '';
           card.labels.forEach(function(label) {
+            var labelDateContainer = document.createElement('div');
+            labelDateContainer.className = 'label-date-container';
+            
             var labelContainer = document.createElement('div');
             labelContainer.className = 'label-container';
             
@@ -146,12 +124,19 @@
             labelContainer.appendChild(checkbox);
             labelContainer.appendChild(colorSwatch);
             labelContainer.appendChild(labelName);
-            labelsContainer.appendChild(labelContainer);
+            
+            var dateInput = document.createElement('input');
+            dateInput.type = 'date';
+            dateInput.className = 'date-input';
+            dateInput.dataset.labelId = label.id;
+            
+            labelDateContainer.appendChild(labelContainer);
+            labelDateContainer.appendChild(dateInput);
+            labelsAndDatesContainer.appendChild(labelDateContainer);
           });
         });
     }
 
-    // Function to populate members
     function populateMembers() {
       return t.board('members')
         .then(function(board) {
@@ -166,32 +151,14 @@
         });
     }
 
-    // Function to initialize our data
-    function initializeData() {
-      return Promise.all([populateLabels(), populateMembers()]);
-    }
-
-    // Call initializeData when the popup loads
-    initializeData().then(() => {
-      console.log('Data initialization complete');
-      // Here you could enable UI elements or perform other actions
-      // that depend on this data being loaded
-    });
-
     document.getElementById('createButton').addEventListener('click', function() {
       var selectedLabels = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-        .map(checkbox => checkbox.value);
-      var dueDateInput = document.getElementById('dueDate').value;
+        .map(checkbox => ({
+          id: checkbox.value,
+          dueDate: document.querySelector(`.date-input[data-label-id="${checkbox.value}"]`).value
+        }));
       var selectedMembers = Array.from(document.getElementById('members').selectedOptions)
         .map(option => option.value);
-      
-      // Convert the date to 5:00 PM in local time, then to UTC
-      var dueDate = null;
-      if (dueDateInput) {
-        var [year, month, day] = dueDateInput.split('-').map(Number);
-        var date = new Date(year, month - 1, day, 17, 0, 0, 0);  // month is 0-indexed
-        dueDate = date.toISOString();
-      }
 
       this.disabled = true;
       this.textContent = 'Creating Cards...';
@@ -209,9 +176,16 @@
           ]);
         })
         .then(function([card, list, token]) {
-          var createPromises = selectedLabels.map(function(labelId) {
-            var label = card.labels.find(l => l.id === labelId);
+          var createPromises = selectedLabels.map(function(labelData) {
+            var label = card.labels.find(l => l.id === labelData.id);
             var newCardName = `${card.name}: ${label.name || label.color}`;
+            var dueDate = null;
+            if (labelData.dueDate) {
+              var [year, month, day] = labelData.dueDate.split('-').map(Number);
+              var date = new Date(year, month - 1, day, 17, 0, 0, 0);  // month is 0-indexed
+              dueDate = date.toISOString();
+            }
+            
             return fetch(`https://api.trello.com/1/cards?key=${TRELLO_APP_KEY}&token=${token}`, {
               method: 'POST',
               headers: {
@@ -219,12 +193,12 @@
               },
               body: JSON.stringify({
                 name: newCardName,
-                desc: card.desc,  // Use the source card's description
+                desc: card.desc,
                 pos: 'top',
                 due: dueDate,
                 idList: list.id,
                 idMembers: selectedMembers,
-                idLabels: [labelId]
+                idLabels: [labelData.id]
               })
             })
             .then(response => response.json())
@@ -254,10 +228,15 @@
           document.getElementById('error').textContent = 'Error creating cards. Please try again.';
         })
         .finally(function() {
-          document.getElementById('createButton').disabled = false;
-          document.getElementById('createButton').textContent = 'Create Sprint Cards';
-        });
+          this.disabled = false;
+          this.textContent = 'Create Sprint Cards';
+        }.bind(this));
     });
+
+    // Initialize
+    Promise.all([populateLabels(), populateMembers()])
+      .then(() => console.log('Initialization complete'))
+      .catch(error => console.error('Initialization failed:', error));
   </script>
 </body>
 </html>

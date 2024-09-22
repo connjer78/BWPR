@@ -15,6 +15,7 @@
 - Provides a spacious popup interface with all options visible without scrolling
 - Adds a link from each new card back to the source card as an attachment
 - Copies the description from the source card to each new card
+- Allows setting distinct due dates for each new card
 
 ## Files
 - `index.html`: The connector file for the Power-Up (active)
@@ -57,10 +58,10 @@ This Power-Up is functional and ready for use. Here are the key points about its
 - **Label Handling**: Displays and uses all available label colors, including light and dark variants.
 - **Card Naming**: New cards are named using the format "{sourceCardName}: {labelName}" for clear identification.
 - **Due Date Handling**: 
-  - Allows easy selection of due dates with a single date picker.
-  - Automatically sets due time to 5:00 PM in the user's local time.
-  - Ensures consistency across different timezones.
-  - Robust date handling independent of usage time.
+  - Allows setting distinct due dates for each new card
+  - Dynamically updates the interface based on selected labels
+  - Automatically sets due time to 5:00 PM in the user's local time
+  - Ensures consistency across different timezones
 - **User Interface**:
   - Optimized for ease of use with a spacious layout.
   - All options visible without scrolling.
