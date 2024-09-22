@@ -33,6 +33,13 @@
     #createButton {
       width: 100%;
     }
+    #dueDate, #dueTime {
+      width: calc(50% - 5px);
+      margin-right: 5px;
+    }
+    #dueTime {
+      margin-right: 0;
+    }
   </style>
 </head>
 <body>
@@ -44,7 +51,8 @@
     </div>
     <div class="section">
       <h3>Due Date</h3>
-      <input type="datetime-local" id="dueDate">
+      <input type="date" id="dueDate">
+      <input type="time" id="dueTime">
     </div>
     <div class="section">
       <h3>Members</h3>
@@ -163,11 +171,16 @@
       var selectedLabels = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
         .map(checkbox => checkbox.value);
       var dueDateInput = document.getElementById('dueDate').value;
+      var dueTimeInput = document.getElementById('dueTime').value;
       var selectedMembers = Array.from(document.getElementById('members').selectedOptions)
         .map(option => option.value);
       
-      // Convert the local date to UTC
-      var dueDate = dueDateInput ? new Date(dueDateInput).toISOString() : null;
+      // Combine date and time, then convert to UTC
+      var dueDate = null;
+      if (dueDateInput && dueTimeInput) {
+        var dateTimeString = `${dueDateInput}T${dueTimeInput}`;
+        dueDate = new Date(dateTimeString).toISOString();
+      }
 
       this.disabled = true;
       this.textContent = 'Creating Cards...';
