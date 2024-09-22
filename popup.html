@@ -153,77 +153,89 @@
       this.disabled = true;
       this.textContent = 'Creating Cards...';
 
-      // Get the current list ID and authorize
-      Promise.all([
-        t.card('idList'),
-        t.getRestApi().authorize({ scope: 'write' })
-      ])
-      .then(function([card, restApi]) {
-        var listId = card.idList;
-        
-        var createCard = function(name, labelIds) {
-          return restApi.post('/cards', {
-            name: name,
-            idList: listId,
-            idLabels: labelIds,
-            due: dueDate,
-            idMembers: selectedMembers
+      t.getRestApi()
+        .isAuthorized()
+        .then(function(isAuthorized) {
+          if (isAuthorized) {
+            return t.getRestApi();
+          }
+          return t.popup({
+            type: 'authorize',
+            args: { scope: 'read,write' }
+          })
+          .then(function() {
+            return t.getRestApi();
           });
-        };
+        })
+        .then(function(restApi) {
+          return t.card('idList')
+            .then(function(card) {
+              var listId = card.idList;
+              
+              var createCard = function(name, labelIds) {
+                return restApi.post('/cards', {
+                  name: name,
+                  idList: listId,
+                  idLabels: labelIds,
+                  due: dueDate,
+                  idMembers: selectedMembers
+                });
+              };
 
-        var cardCreationPromises = [];
+              var cardCreationPromises = [];
 
-        if (selectedLabels.length === 0) {
-          // Create a single card with no labels
-          cardCreationPromises.push(createCard('New Sprint Card', []));
-        } else {
-          // Create a card for each selected label
-          cardCreationPromises = selectedLabels.map(function(labelId) {
-            return createCard('Sprint Card for ' + labelId, [labelId]);
-          });
-        }
+              if (selectedLabels.length === 0) {
+                // Create a single card with no labels
+                cardCreationPromises.push(createCard('New Sprint Card', []));
+              } else {
+                // Create a card for each selected label
+                cardCreationPromises = selectedLabels.map(function(labelId) {
+                  return createCard('Sprint Card for ' + labelId, [labelId]);
+                });
+              }
 
-        return Promise.all(cardCreationPromises);
-      })
-      .then(function(newCards) {
-        console.log('Created cards:', newCards);
-        
-        // Display success message
-        var messageDiv = document.createElement('div');
-        messageDiv.textContent = 'Successfully created ' + newCards.length + ' sprint card(s)!';
-        messageDiv.style.backgroundColor = '#5aac44';
-        messageDiv.style.color = 'white';
-        messageDiv.style.padding = '10px';
-        messageDiv.style.marginTop = '10px';
-        document.body.appendChild(messageDiv);
+              return Promise.all(cardCreationPromises);
+            });
+        })
+        .then(function(newCards) {
+          console.log('Created cards:', newCards);
+          
+          // Display success message
+          var messageDiv = document.createElement('div');
+          messageDiv.textContent = 'Successfully created ' + newCards.length + ' sprint card(s)!';
+          messageDiv.style.backgroundColor = '#5aac44';
+          messageDiv.style.color = 'white';
+          messageDiv.style.padding = '10px';
+          messageDiv.style.marginTop = '10px';
+          document.body.appendChild(messageDiv);
 
-        // Resize popup to fit new content
-        t.sizeTo(document.body);
+          // Resize popup to fit new content
+          t.sizeTo(document.body);
 
-        // Close the popup after a short delay
-        setTimeout(function() {
-          t.closePopup();
-        }, 2000);
-      })
-      .catch(function(error) {
-        console.error('Error creating cards:', error);
-        
-        // Display error message
-        var messageDiv = document.createElement('div');
-        messageDiv.textContent = 'Error creating cards: ' + (error.message || 'Unknown error');
-        messageDiv.style.backgroundColor = '#eb5a46';
-        messageDiv.style.color = 'white';
-        messageDiv.style.padding = '10px';
-        messageDiv.style.marginTop = '10px';
-        document.body.appendChild(messageDiv);
+          // Close the popup after a short delay
+          setTimeout(function() {
+            t.closePopup();
+          }, 2000);
+        })
+        .catch(function(error) {
+          console.error('Error creating cards:', error);
+          
+          // Display error message
+          var messageDiv = document.createElement('div');
+          messageDiv.textContent = 'Error creating cards: ' + (error.message || 'Unknown error');
+          messageDiv.style.backgroundColor = '#eb5a46';
+          messageDiv.style.color = 'white';
+          messageDiv.style.padding = '10px';
+          messageDiv.style.marginTop = '10px';
+          document.body.appendChild(messageDiv);
 
-        // Re-enable the button
-        this.disabled = false;
-        this.textContent = 'Create Sprint Cards';
+          // Re-enable the button
+          this.disabled = false;
+          this.textContent = 'Create Sprint Cards';
 
-        // Resize popup to fit new content
-        t.sizeTo(document.body);
-      });
+          // Resize popup to fit new content
+          t.sizeTo(document.body);
+        });
     });
   </script>
 </body>
