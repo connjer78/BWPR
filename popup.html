@@ -153,9 +153,28 @@
       this.disabled = true;
       this.textContent = 'Creating Cards...';
 
-      t.authorize()
-        .then(function() {
-          return t.getRestApi();
+      t.getRestApi()
+        .isAuthorized()
+        .then(function(isAuthorized) {
+          if (isAuthorized) {
+            return t.getRestApi();
+          } else {
+            return t.popup({
+              type: 'confirm',
+              title: 'Authorization Required',
+              message: 'This Power-Up needs authorization to create cards. Do you want to authorize it?',
+              confirmText: 'Authorize',
+              onConfirm: function(t) {
+                return t.authorize({
+                  scope: 'write',
+                  expiration: 'never'
+                })
+                .then(function() {
+                  return t.getRestApi();
+                });
+              }
+            });
+          }
         })
         .then(function(restApi) {
           return t.card('idList')
