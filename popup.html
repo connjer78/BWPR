@@ -38,6 +38,15 @@
     .error { color: red; }
     .label-checkbox { margin-right: 10px; }
     .label-name { display: inline-block; margin-right: 10px; }
+    .label-container { display: flex; align-items: center; margin-bottom: 5px; }
+    .label-checkbox { margin-right: 10px; }
+    .label-color-swatch { 
+      width: 20px; 
+      height: 20px; 
+      border-radius: 3px; 
+      margin-right: 10px; 
+    }
+    .label-name { color: #000; }
   </style>
 </head>
 <body>
@@ -104,20 +113,26 @@
         card.labels.forEach(function(label) {
           var checkboxId = 'label-' + label.id;
           
+          var container = document.createElement('div');
+          container.className = 'label-container';
+          
           var checkbox = document.createElement('input');
           checkbox.type = 'checkbox';
           checkbox.id = checkboxId;
           checkbox.value = label.id;
           checkbox.className = 'label-checkbox';
           
+          var colorSwatch = document.createElement('div');
+          colorSwatch.className = 'label-color-swatch';
+          colorSwatch.style.backgroundColor = label.color;
+          
           var labelElement = document.createElement('label');
           labelElement.htmlFor = checkboxId;
           labelElement.className = 'label-name';
           labelElement.textContent = label.name || label.color;
-          labelElement.style.color = label.color;
           
-          var container = document.createElement('div');
           container.appendChild(checkbox);
+          container.appendChild(colorSwatch);
           container.appendChild(labelElement);
           
           labelsContainer.appendChild(container);
