@@ -171,43 +171,6 @@
         });
     }
 
-    function fetchBoards() {
-      return t.organization('id')
-        .then(function(organization) {
-          return t.getRestApi().getToken()
-            .then(function(token) {
-              return fetch(`https://api.trello.com/1/organizations/${organization.id}/boards?key=${TRELLO_APP_KEY}&token=${token}`)
-                .then(response => response.json())
-                .then(boards => {
-                  console.log('Fetched boards:', boards);
-                  return boards;
-                });
-            });
-        })
-        .catch(function(error) {
-          console.error('Error fetching boards:', error);
-          throw error;
-        });
-    }
-
-    function fetchLists(boardId) {
-      return t.getRestApi().getToken()
-        .then(function(token) {
-          return fetch(`https://api.trello.com/1/boards/${boardId}/lists?key=${TRELLO_APP_KEY}&token=${token}`)
-            .then(response => response.json())
-            .then(lists => {
-              console.log('Fetched lists:', lists);
-              return lists;
-            });
-        })
-        .catch(function(error) {
-          console.error('Error fetching lists:', error);
-          throw error;
-        });
-    }
-
-    // Add these functions after your existing code
-
     function findSprintBoard() {
       return t.organization('id')
         .then(function(organization) {
@@ -249,7 +212,6 @@
         });
     }
 
-    // Modify the createButton event listener to use these new functions
     document.getElementById('createButton').addEventListener('click', function() {
       var selectedLabels = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
         .map(checkbox => ({
@@ -266,15 +228,63 @@
         .then(sprintBoard => findBacklogList(sprintBoard.id))
         .then(backlogList => {
           console.log('Ready to create cards in Backlog list:', backlogList);
-          // Here, you would proceed with card creation using backlogList.id
-          // For now, we'll just log the information
-          console.log('Selected labels:', selectedLabels);
-          console.log('Selected members:', selectedMembers);
-          // ... rest of your card creation logic ...
+          
+          return t.card('all')
+            .then(sourceCard => {
+              var createPromises = selectedLabels.map(function(labelData) {
+                var label = sourceCard.labels.find(l => l.id === labelData.id);
+                var newCardName = `${sourceCard.name}: ${label.name || label.color}`;
+                var dueDate = null;
+                if (labelData.dueDate) {
+                  var [year, month, day] = labelData.dueDate.split('-').map(Number);
+                  var date = new Date(year, month - 1, day, 17, 0, 0, 0);  // month is 0-indexed
+                  dueDate = date.toISOString();
+                }
+                
+                return t.getRestApi().getToken()
+                  .then(token => {
+                    return fetch(`https://api.trello.com/1/cards?key=${TRELLO_APP_KEY}&token=${token}`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        name: newCardName,
+                        desc: sourceCard.desc,
+                        pos: 'top',
+                        due: dueDate,
+                        idList: backlogList.id,  // Use the Backlog list ID
+                        idMembers: selectedMembers,
+                        idLabels: [labelData.id]
+                      })
+                    })
+                    .then(response => response.json())
+                    .then(newCard => {
+                      // Add source card as attachment to new card
+                      return fetch(`https://api.trello.com/1/cards/${newCard.id}/attachments?key=${TRELLO_APP_KEY}&token=${token}`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          name: `Source: ${sourceCard.name}`,
+                          url: `https://trello.com/c/${sourceCard.shortLink}`
+                        })
+                      }).then(() => newCard);
+                    });
+                  });
+              });
+
+              return Promise.all(createPromises);
+            });
+        })
+        .then(newCards => {
+          console.log('Created cards:', newCards);
+          t.closePopup();
         })
         .catch(error => {
           console.error('Error:', error);
-          document.getElementById('error').textContent = 'Error finding Sprint board or Backlog list. Please try again.';
+          document.getElementById('error').textContent = 'Error creating cards. Please try again.';
         })
         .finally(() => {
           this.disabled = false;
@@ -286,23 +296,6 @@
     Promise.all([populateLabels(), populateMembers()])
       .then(() => console.log('Initialization complete'))
       .catch(error => console.error('Initialization failed:', error));
-
-    // Example usage (you can remove this later)
-    document.getElementById('createButton').addEventListener('click', function() {
-      fetchBoards()
-        .then(boards => {
-          // For demonstration, let's fetch lists of the first board
-          if (boards.length > 0) {
-            return fetchLists(boards[0].id);
-          }
-        })
-        .then(lists => {
-          console.log('Lists in the first board:', lists);
-        })
-        .catch(error => {
-          console.error('Error:', error);
-        });
-    });
   </script>
 </body>
 </html>
