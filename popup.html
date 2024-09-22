@@ -28,26 +28,14 @@
 </head>
 <body>
   <h2>Create Sprint Cards</h2>
-  <div class="update-message">Colors should match now. (Updated version V2)</div>
+  <div class="update-message">Discovering all Trello colors. (Updated version V4)</div>
   <div id="labels">Loading labels...</div>
   <button class="mod-primary" id="createButton">Create Sprint Cards</button>
   <script>
     var t = TrelloPowerUp.iframe();
     
-    // Updated Trello color mapping
-    var colorMap = {
-      'green': '#61bd4f',
-      'yellow': '#f2d600',
-      'orange': '#ff9f1a',
-      'red': '#eb5a46',
-      'purple': '#c377e0',
-      'blue': '#0079bf',
-      'sky': '#00c2e0',
-      'lime': '#51e898',
-      'pink': '#ff78cb',
-      'black': '#344563',
-      'none': '#b3bac5'  // for "no color" labels
-    };
+    // Object to store all unique colors
+    var allColors = {};
 
     t.render(function(){
       return t.card('labels')
@@ -66,17 +54,28 @@
             
             var labelSpan = document.createElement('span');
             labelSpan.className = 'label-color';
-            labelSpan.style.backgroundColor = colorMap[label.color] || '#b3bac5'; // Default to gray if color not found
+            labelSpan.style.backgroundColor = label.color;
             
             var labelText = document.createElement('label');
             labelText.htmlFor = 'label-' + label.id;
-            labelText.textContent = label.name || (label.color === 'none' ? 'No color' : label.color);
+            labelText.textContent = `${label.name || 'No name'} (${label.color})`;
             
             labelItem.appendChild(checkbox);
             labelItem.appendChild(labelSpan);
             labelItem.appendChild(labelText);
             labelList.appendChild(labelItem);
+
+            // Add color to allColors object
+            if (!allColors[label.color]) {
+              allColors[label.color] = true;
+            }
+
+            // Debug logging
+            console.log(`Label: ${label.name}, Color: ${label.color}`);
           });
+
+          // Log all unique colors
+          console.log('All unique colors:', Object.keys(allColors));
         });
     });
 
