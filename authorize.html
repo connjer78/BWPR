@@ -1,43 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="utf-8" />
+    <title>Authorize</title>
     <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css">
-    <script src="https://p.trellocdn.com/power-up.min.js"></script>
   </head>
   <body>
-    <button id="authorizeButton" type="button" class="mod-primary">Authorize</button>
-    <p id="status"></p>
+    <button id="authorizeButton" class="mod-primary">Authorize Sprint Cards Power-Up</button>
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
     <script>
-      var t = window.TrelloPowerUp.iframe();
-      var TRELLO_APP_KEY = '18f0d2661292b35d137bdaa4013eb249';
-
-      function updateStatus(message) {
-        document.getElementById('status').textContent = message;
-      }
-
+      var t = window.TrelloPowerUp.iframe({
+        appKey: '18f0d2661292b35d137bdaa4013eb249',
+        appName: 'Sprint Cards Power-Up'
+      });
+      
       document.getElementById('authorizeButton').addEventListener('click', function() {
-        updateStatus('Authorizing...');
-        
-        // Construct the authorization URL
-        var returnUrl = encodeURIComponent(window.location.origin + '/BWPR/authorize-callback.html');
-        var authUrl = `https://trello.com/1/authorize?expiration=never&name=Sprint%20Cards%20Power-Up&scope=read,write&response_type=token&key=${TRELLO_APP_KEY}&return_url=${returnUrl}`;
-        
-        // Open the authorization URL in a new window
-        window.open(authUrl, '_blank', 'width=500,height=600');
-        
-        // Listen for messages from the callback page
-        window.addEventListener('message', function(event) {
-          if (event.origin !== window.location.origin) return;
-          if (event.data.type === 'authorization-success') {
-            updateStatus('Authorization successful!');
-            t.set('member', 'private', 'authToken', event.data.token)
-              .then(function() {
-                t.closePopup();
-              });
-          } else if (event.data.type === 'authorization-failure') {
-            updateStatus('Authorization failed. Please try again.');
-          }
-        });
+        t.getRestApi()
+          .authorize({ scope: 'read,write' })
+          .then(function() {
+            t.closePopup();
+          })
+          .catch(TrelloPowerUp.restApiError.AuthDeniedError, function() {
+            console.log('Authorization cancelled');
+          });
       });
     </script>
   </body>

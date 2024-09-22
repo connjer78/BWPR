@@ -9,18 +9,36 @@
         var TRELLO_APP_KEY = '18f0d2661292b35d137bdaa4013eb249';
 
         window.TrelloPowerUp.initialize({
-            'card-buttons': function(t, options) {
-                return [{
-                    icon: 'https://connjer78.github.io/BWPR/assets/rocketship.PNG',
-                    text: 'Sprint It!',
-                    callback: function(t) {
-                        return t.popup({
-                            title: "Create Sprint Cards",
-                            url: './popup.html',
-                            height: 400  // Increased from 300 to 400
-                        });
-                    }
-                }];
+            'card-buttons': function(t) {
+                return t.getRestApi()
+                    .isAuthorized()
+                    .then(function(isAuthorized) {
+                        if (isAuthorized) {
+                            return [{
+                                icon: 'https://connjer78.github.io/BWPR/assets/rocketship.PNG',
+                                text: 'Sprint It!',
+                                callback: function(t) {
+                                    return t.popup({
+                                        title: "Create Sprint Cards",
+                                        url: './popup.html',
+                                        height: 400
+                                    });
+                                }
+                            }];
+                        } else {
+                            return [{
+                                icon: 'https://connjer78.github.io/BWPR/assets/rocketship.PNG',
+                                text: 'Sprint It!',
+                                callback: function(t) {
+                                    return t.popup({
+                                        title: "Authorize to Continue",
+                                        url: './authorize.html',
+                                        height: 140
+                                    });
+                                }
+                            }];
+                        }
+                    });
             }
         }, {
             appKey: TRELLO_APP_KEY,

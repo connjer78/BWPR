@@ -58,7 +58,7 @@
   </div>
   <script>
     var TRELLO_APP_KEY = '18f0d2661292b35d137bdaa4013eb249';
-    var t = TrelloPowerUp.iframe({
+    var t = window.TrelloPowerUp.iframe({
       appKey: TRELLO_APP_KEY,
       appName: 'Sprint Cards Power-Up'
     });
@@ -205,27 +205,44 @@
       this.disabled = true;
       this.textContent = 'Creating Cards...';
 
-      // Get the current card and list
-      t.card('all')
-        .then(function(card) {
-          return t.list('id', 'name')
-            .then(function(list) {
-              return { card: card, list: list };
+      // Get the REST API client
+      t.getRestApi()
+        .isAuthorized()
+        .then(function(isAuthorized) {
+          if (!isAuthorized) {
+            return t.popup({
+              title: 'Authorize to Create Cards',
+              url: './authorize.html',
+              height: 140,
             });
+          }
         })
-        .then(function(context) {
+        .then(function() {
+          return Promise.all([
+            t.card('all'),
+            t.list('id', 'name'),
+            t.getRestApi().getToken()
+          ]);
+        })
+        .then(function([card, list, token]) {
           // Create a new card for each selected label
           var createPromises = selectedLabels.map(function(labelId) {
-            var label = context.card.labels.find(l => l.id === labelId);
-            return t.post('cards', {
-              name: label.name || 'New Sprint Card',
-              desc: 'Created from "' + context.card.name + '"',
-              pos: 'top',
-              due: dueDate,
-              idList: context.list.id,
-              idMembers: selectedMembers,
-              idLabels: [labelId]
-            });
+            var label = card.labels.find(l => l.id === labelId);
+            return fetch(`https://api.trello.com/1/cards?key=${TRELLO_APP_KEY}&token=${token}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                name: label.name || 'New Sprint Card',
+                desc: 'Created from "' + card.name + '"',
+                pos: 'top',
+                due: dueDate,
+                idList: list.id,
+                idMembers: selectedMembers,
+                idLabels: [labelId]
+              })
+            }).then(response => response.json());
           });
 
           return Promise.all(createPromises);
