@@ -173,11 +173,11 @@
       var selectedMembers = Array.from(document.getElementById('members').selectedOptions)
         .map(option => option.value);
       
-      // Convert the date to UTC, setting the time to the end of the day
+      // Convert the date to 5:00 PM in local time, then to UTC
       var dueDate = null;
       if (dueDateInput) {
         var date = new Date(dueDateInput);
-        date.setUTCHours(23, 59, 59, 999);  // Set to end of day in UTC
+        date.setHours(17, 0, 0, 0);  // Set to 5:00 PM local time
         dueDate = date.toISOString();
       }
 
