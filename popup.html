@@ -221,6 +221,8 @@
       var selectedMembers = Array.from(document.getElementById('members').selectedOptions)
         .map(option => option.value);
 
+      console.log('Selected members in createCards:', selectedMembers);
+
       this.disabled = true;
       this.textContent = 'Creating Cards...';
 
@@ -316,6 +318,7 @@
       }
 
       console.log(`Creating new card: "${newCardName}" based on template: "${templateCard.name}"`);
+      console.log('Selected members:', selectedMembers);
 
       return fetch(`https://api.trello.com/1/cards?key=${TRELLO_APP_KEY}&token=${token}`, {
         method: 'POST',
@@ -332,8 +335,28 @@
       .then(response => response.json())
       .then(newCard => {
         console.log('New card created:', newCard);
-        return addAttachmentToCard(newCard.id, sourceCard, token);
-      });
+        console.log('Members on new card:', newCard.idMembers);
+        
+        // If members weren't added during card creation, add them now
+        if (selectedMembers.length > 0 && (!newCard.idMembers || newCard.idMembers.length === 0)) {
+          return addMembersToCard(newCard.id, selectedMembers, token)
+            .then(() => newCard);
+        }
+        return newCard;
+      })
+      .then(newCard => addAttachmentToCard(newCard.id, sourceCard, token));
+    }
+
+    function addMembersToCard(cardId, memberIds, token) {
+      const promises = memberIds.map(memberId => 
+        fetch(`https://api.trello.com/1/cards/${cardId}/idMembers?key=${TRELLO_APP_KEY}&token=${token}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value: memberId })
+        })
+      );
+      return Promise.all(promises)
+        .then(() => console.log('Members added to card'));
     }
 
     function addAttachmentToCard(cardId, sourceCard, token) {
