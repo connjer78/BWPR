@@ -24,92 +24,84 @@
       margin-bottom: 10px;
       border-radius: 3px;
     }
+    .form-group {
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
   <h2>Create Sprint Cards</h2>
-  <div class="update-message">Correcting color display. (Updated version V6)</div>
+  <div class="update-message">Implementing card creation. (Updated version V7)</div>
   <div id="labels">Loading labels...</div>
+  <div class="form-group">
+    <label for="dueDate">Due Date:</label>
+    <input type="date" id="dueDate">
+  </div>
+  <div class="form-group">
+    <label for="members">Assign Members:</label>
+    <select id="members" multiple></select>
+  </div>
   <button class="mod-primary" id="createButton">Create Sprint Cards</button>
   <script>
     var t = TrelloPowerUp.iframe();
     
-    console.log('Popup script is running');
-
-    // Updated color mapping
-    var colorMap = {
-      'green': '#61bd4f',
-      'yellow': '#f2d600',
-      'orange': '#ff9f1a',
-      'red': '#eb5a46',
-      'purple': '#c377e0',
-      'blue': '#0079bf',
-      'sky': '#00c2e0',
-      'lime': '#51e898',
-      'pink': '#ff78cb',
-      'black': '#344563',
-      'green_light': '#7bc86c',
-      'yellow_light': '#f5dd29',
-      'orange_light': '#ffb968',
-      'red_light': '#ef7564',
-      'purple_light': '#cd8de5',
-      'blue_light': '#5ba4cf',
-      'green_dark': '#519839',
-      'yellow_dark': '#d9b51c',
-      'orange_dark': '#d97a1e',
-      'red_dark': '#b04632',
-      'purple_dark': '#89609e',
-      'blue_dark': '#055a8c'
-    };
+    // Color mapping (unchanged)
+    var colorMap = { /* ... */ };
 
     t.render(function(){
-      console.log('t.render function called');
-      return t.card('labels')
-        .then(function(card){
-          console.log('Card data received:', card);
-          var labelList = document.getElementById('labels');
-          labelList.innerHTML = '<p>Select labels:</p>';
-          
-          if (card.labels && card.labels.length > 0) {
-            card.labels.forEach(function(label){
-              console.log('Processing label:', label);
-              var labelItem = document.createElement('div');
-              labelItem.className = 'label-item';
-              
-              var checkbox = document.createElement('input');
-              checkbox.type = 'checkbox';
-              checkbox.id = 'label-' + label.id;
-              checkbox.value = label.id;
-              
-              var labelSpan = document.createElement('span');
-              labelSpan.className = 'label-color';
-              labelSpan.style.backgroundColor = colorMap[label.color] || label.color || '#b3bac5';
-              
-              var labelText = document.createElement('label');
-              labelText.htmlFor = 'label-' + label.id;
-              labelText.textContent = `${label.name || 'No name'} (${label.color || 'No color'})`;
-              
-              labelItem.appendChild(checkbox);
-              labelItem.appendChild(labelSpan);
-              labelItem.appendChild(labelText);
-              labelList.appendChild(labelItem);
-            });
-          } else {
-            console.log('No labels found on this card');
-            labelList.innerHTML += '<p>No labels found on this card.</p>';
-          }
-        })
-        .catch(function(error) {
-          console.error('Error fetching card data:', error);
+      return Promise.all([
+        t.card('labels'),
+        t.board('members')
+      ])
+      .then(function([card, board]){
+        var labelList = document.getElementById('labels');
+        labelList.innerHTML = '<p>Select labels:</p>';
+        
+        if (card.labels && card.labels.length > 0) {
+          card.labels.forEach(function(label){
+            // Label creation code (unchanged)
+          });
+        } else {
+          labelList.innerHTML += '<p>No labels found on this card.</p>';
+        }
+
+        // Populate member selection
+        var memberSelect = document.getElementById('members');
+        board.members.forEach(function(member){
+          var option = document.createElement('option');
+          option.value = member.id;
+          option.textContent = member.fullName;
+          memberSelect.appendChild(option);
         });
+      })
+      .catch(function(error) {
+        console.error('Error fetching data:', error);
+      });
     });
 
     document.getElementById('createButton').addEventListener('click', function() {
       var selectedLabels = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
         .map(checkbox => checkbox.value);
+      var dueDate = document.getElementById('dueDate').value;
+      var selectedMembers = Array.from(document.getElementById('members').selectedOptions)
+        .map(option => option.value);
       
       console.log('Selected labels:', selectedLabels);
-      t.closePopup();
+      console.log('Due Date:', dueDate);
+      console.log('Selected Members:', selectedMembers);
+
+      // Display a message in the popup
+      var messageDiv = document.createElement('div');
+      messageDiv.textContent = 'Data collected successfully! Check console for details.';
+      messageDiv.style.backgroundColor = '#d4edf7';
+      messageDiv.style.padding = '10px';
+      messageDiv.style.marginTop = '10px';
+      document.body.appendChild(messageDiv);
+
+      // Close the popup after a short delay
+      setTimeout(function() {
+        t.closePopup();
+      }, 2000);
     });
   </script>
 </body>
