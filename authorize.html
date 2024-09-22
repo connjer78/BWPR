@@ -32,6 +32,22 @@
           }
         });
       });
+
+      // Attempt to authorize immediately when the page loads
+      t.authorize(TRELLO_APP_KEY, {
+        scope: 'read,write',
+        expiration: 'never',
+        success: function() {
+          updateStatus('Authorization successful!');
+          setTimeout(function() {
+            t.closePopup();
+          }, 1000);
+        },
+        error: function(err) {
+          console.error('Failed to auto-authorize:', err);
+          updateStatus('Please click the Authorize button.');
+        }
+      });
     </script>
   </body>
 </html>
