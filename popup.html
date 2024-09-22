@@ -88,76 +88,6 @@
       t.sizeTo(document.body).done();
     }
 
-    // Check authorization status when the popup opens
-    t.getRestApi()
-      .isAuthorized()
-      .then(function(isAuthorized) {
-        if (isAuthorized) {
-          document.getElementById('authStatus').textContent = 'Authorized';
-        } else {
-          document.getElementById('authStatus').textContent = 'Not authorized. Please close this popup and click "Sprint It!" again to authorize.';
-          throw new Error('Not authorized');
-        }
-      })
-      .catch(function(error) {
-        console.error('Authorization check failed:', error);
-      });
-
-    t.render(function(){
-      return Promise.all([
-        t.card('labels'),
-        t.board('members')
-      ])
-      .then(function([card, board]){
-        var labelList = document.getElementById('labels');
-        labelList.innerHTML = '<p>Select labels:</p>';
-        
-        if (card.labels && card.labels.length > 0) {
-          card.labels.forEach(function(label){
-            var labelItem = document.createElement('div');
-            labelItem.className = 'label-item';
-            
-            var checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = 'label-' + label.id;
-            checkbox.value = label.id;
-            
-            var labelSpan = document.createElement('span');
-            labelSpan.className = 'label-color';
-            labelSpan.style.backgroundColor = colorMap[label.color] || label.color || '#b3bac5';
-            
-            var labelText = document.createElement('label');
-            labelText.htmlFor = 'label-' + label.id;
-            labelText.textContent = label.name;
-            
-            labelItem.appendChild(checkbox);
-            labelItem.appendChild(labelSpan);
-            labelItem.appendChild(labelText);
-            
-            labelList.appendChild(labelItem);
-          });
-        } else {
-          labelList.innerHTML += '<p>No labels found on this card.</p>';
-        }
-
-        // Populate member selection
-        var memberSelect = document.getElementById('members');
-        board.members.forEach(function(member){
-          var option = document.createElement('option');
-          option.value = member.id;
-          option.textContent = member.fullName;
-          memberSelect.appendChild(option);
-        });
-
-        // Resize the popup after content is loaded
-        resizePopup();
-      })
-      .catch(function(error) {
-        console.error('Error fetching data:', error);
-        resizePopup();
-      });
-    });
-
     document.getElementById('createButton').addEventListener('click', function() {
       var selectedLabels = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
         .map(checkbox => checkbox.value);
@@ -240,6 +170,8 @@
           t.sizeTo(document.body);
         });
     });
+
+    // Rest of your existing JavaScript code...
   </script>
 </body>
 </html>
