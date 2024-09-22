@@ -123,6 +123,20 @@
         showError('Error loading members: ' + error.message);
       });
 
+    document.getElementById('createButton').addEventListener('click', function() {
+      var selectedLabels = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+        .map(checkbox => checkbox.value);
+      var dueDate = document.getElementById('dueDate').value;
+      var selectedMembers = Array.from(document.getElementById('members').selectedOptions)
+        .map(option => option.value);
+      
+      // Disable the button to prevent multiple submissions
+      this.disabled = true;
+      this.textContent = 'Creating Cards...';
+
+      // Your existing card creation code here...
+    });
+
     // Rest of your existing JavaScript code...
   </script>
 </body>
