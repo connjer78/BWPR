@@ -15,6 +15,7 @@
     "permissions": [
         "read",
         "write",
+        "account",
         "organization"
     ]
 }

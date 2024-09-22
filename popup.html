@@ -235,8 +235,12 @@
           return t.card('all')
             .then(sourceCard => {
               console.log('Source card:', sourceCard);
-              var createPromises = selectedLabels.map(function(labelData) {
+              var createPromises = selectedLabels.filter(labelData => labelData && labelData.id).map(function(labelData) {
+                console.log('Label data:', labelData);
                 var label = sourceCard.labels.find(l => l.id === labelData.id);
+                console.log('Source card labels:', sourceCard.labels);
+                console.log('Selected label ID:', labelData.id);
+                console.log('Found label:', label);
                 console.log('Creating card for label:', label);
                 var newCardName = `${sourceCard.name}: ${label.name || label.color}`;
                 var dueDate = null;
@@ -253,8 +257,7 @@
                       desc: sourceCard.desc,
                       due: dueDate,
                       idList: backlogList.id,
-                      idMembers: selectedMembers,
-                      idLabels: [labelData.id]
+                      idMembers: selectedMembers
                     });
                     return fetch(`https://api.trello.com/1/cards?key=${TRELLO_APP_KEY}&token=${token}`, {
                       method: 'POST',
@@ -267,8 +270,7 @@
                         pos: 'top',
                         due: dueDate,
                         idList: backlogList.id,
-                        idMembers: selectedMembers,
-                        idLabels: [labelData.id]
+                        idMembers: selectedMembers
                       })
                     })
                     .then(response => {
@@ -282,17 +284,25 @@
                     })
                     .then(newCard => {
                       console.log('New card created:', newCard);
-                      // Add source card as attachment to new card
-                      return fetch(`https://api.trello.com/1/cards/${newCard.id}/attachments?key=${TRELLO_APP_KEY}&token=${token}`, {
+                      // Now add the label
+                      return fetch(`https://api.trello.com/1/cards/${newCard.id}/idLabels?key=${TRELLO_APP_KEY}&token=${token}`, {
                         method: 'POST',
                         headers: {
                           'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                          name: `Source: ${sourceCard.name}`,
-                          url: `https://trello.com/c/${sourceCard.shortLink}`
+                          value: labelData.id
                         })
-                      }).then(() => newCard);
+                      })
+                      .then(response => {
+                        if (!response.ok) {
+                          return response.text().then(text => {
+                            console.error('Error adding label:', text);
+                            throw new Error(`HTTP error adding label! status: ${response.status}, message: ${text}`);
+                          });
+                        }
+                        return newCard;
+                      });
                     });
                   });
               });
