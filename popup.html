@@ -201,26 +201,48 @@
       var selectedMembers = Array.from(document.getElementById('members').selectedOptions)
         .map(option => option.value);
       
-      // Log the selected data
-      console.log('Selected Labels:', selectedLabels);
-      console.log('Selected Due Date:', dueDate);
-      console.log('Selected Members:', selectedMembers);
-
-      // Log the stored board and list data
-      console.log('All Boards (from stored data):', allBoards);
-      console.log('Sprint Board Lists (from stored data):', sprintBoardLists);
-
       // Disable the button to prevent multiple submissions
       this.disabled = true;
       this.textContent = 'Creating Cards...';
 
-      // For now, we'll just re-enable the button after a short delay
-      setTimeout(() => {
-        this.disabled = false;
-        this.textContent = 'Create Sprint Cards';
-      }, 2000);
+      // Get the current card and list
+      t.card('all')
+        .then(function(card) {
+          return t.list('id', 'name')
+            .then(function(list) {
+              return { card: card, list: list };
+            });
+        })
+        .then(function(context) {
+          // Create a new card for each selected label
+          var createPromises = selectedLabels.map(function(labelId) {
+            var label = context.card.labels.find(l => l.id === labelId);
+            return t.post('cards', {
+              name: label.name || 'New Sprint Card',
+              desc: 'Created from "' + context.card.name + '"',
+              pos: 'top',
+              due: dueDate,
+              idList: context.list.id,
+              idMembers: selectedMembers,
+              idLabels: [labelId]
+            });
+          });
 
-      // TODO: Implement card creation logic here
+          return Promise.all(createPromises);
+        })
+        .then(function(newCards) {
+          console.log('Created cards:', newCards);
+          t.closePopup();
+        })
+        .catch(function(error) {
+          console.error('Error creating cards:', error);
+          document.getElementById('error').textContent = 'Error creating cards. Please try again.';
+        })
+        .finally(function() {
+          // Re-enable the button
+          document.getElementById('createButton').disabled = false;
+          document.getElementById('createButton').textContent = 'Create Sprint Cards';
+        });
     });
   </script>
 </body>
