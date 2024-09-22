@@ -91,7 +91,17 @@
         'black': '#344563',
         'sky': '#00c2e0',
         'pink': '#ff78cb',
-        'lime': '#51e898'
+        'lime': '#51e898',
+        'yellow_dark': '#d9b51c',
+        'purple_dark': '#89609e',
+        'blue_dark': '#055a8c',
+        'red_dark': '#b04632',
+        'green_dark': '#519839',
+        'orange_dark': '#d29034',
+        'black_dark': '#091e42',
+        'sky_dark': '#0098b7',
+        'pink_dark': '#c75188',
+        'lime_dark': '#4bbf6b'
       };
       return colors[color] || color;
     }
@@ -115,11 +125,11 @@
             
             var colorSwatch = document.createElement('div');
             colorSwatch.className = 'label-color-swatch';
-            colorSwatch.style.backgroundColor = getLabelColor(label.color);
+            colorSwatch.style.backgroundColor = getLabelColor(label.color) || '#c4c9cc'; // Default to grey if color is undefined
             
             var labelName = document.createElement('span');
             labelName.className = 'label-name';
-            labelName.textContent = label.name || label.color;
+            labelName.textContent = label.name || label.color || 'Unnamed';
             
             labelContainer.appendChild(checkbox);
             labelContainer.appendChild(colorSwatch);
