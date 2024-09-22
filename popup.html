@@ -4,40 +4,7 @@
   <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css">
   <script src="https://p.trellocdn.com/power-up.min.js"></script>
   <style>
-    body {
-      max-height: 500px;
-      overflow-y: auto;
-    }
-    .label-list {
-      margin-bottom: 10px;
-    }
-    .label-item {
-      display: flex;
-      align-items: center;
-      margin-bottom: 5px;
-    }
-    .label-color {
-      width: 30px;
-      height: 15px;
-      display: inline-block;
-      margin-right: 5px;
-    }
-    .update-message {
-      background-color: #d4edf7;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 3px;
-    }
-    .form-group {
-      margin-bottom: 10px;
-    }
-    #members {
-      width: 100%;
-      height: 100px;
-    }
     .error { color: red; }
-    .label-checkbox { margin-right: 10px; }
-    .label-name { display: inline-block; margin-right: 10px; }
     .label-container { display: flex; align-items: center; margin-bottom: 5px; }
     .label-checkbox { margin-right: 10px; }
     .label-color-swatch { 
@@ -51,58 +18,43 @@
 </head>
 <body>
   <div id="error" class="error"></div>
-  <h2>Create Sprint Cards</h2>
-  <div class="update-message">Cleaned up label display. (Updated version V10)</div>
-  <div id="labels">Loading labels...</div>
-  <div class="form-group">
-    <label for="dueDate">Due Date:</label>
-    <input type="date" id="dueDate">
+  <div id="content">
+    <!-- Your existing HTML content here -->
+    <div id="labels"></div>
+    <!-- Rest of your HTML -->
   </div>
-  <div class="form-group">
-    <label for="members">Assign Members (hold Ctrl/Cmd to select multiple):</label>
-    <select id="members" multiple></select>
-  </div>
-  <button class="mod-primary" id="createButton">Create Sprint Cards</button>
-  <div id="authStatus"></div>
   <script>
     var TRELLO_APP_KEY = '18f0d2661292b35d137bdaa4013eb249';
     var t = TrelloPowerUp.iframe({
       appKey: TRELLO_APP_KEY,
       appName: 'Sprint Cards Power-Up'
     });
-    
-    // Color mapping
-    var colorMap = {
-      'green': '#61bd4f',
-      'yellow': '#f2d600',
-      'orange': '#ff9f1a',
-      'red': '#eb5a46',
-      'purple': '#c377e0',
-      'blue': '#0079bf',
-      'sky': '#00c2e0',
-      'lime': '#51e898',
-      'pink': '#ff78cb',
-      'black': '#344563',
-      'green_light': '#7bc86c',
-      'yellow_light': '#f5dd29',
-      'orange_light': '#ffb968',
-      'red_light': '#ef7564',
-      'purple_light': '#cd8de5',
-      'blue_light': '#5ba4cf',
-      'green_dark': '#519839',
-      'yellow_dark': '#d9b51c',
-      'orange_dark': '#d97a1e',
-      'red_dark': '#b04632',
-      'purple_dark': '#89609e',
-      'blue_dark': '#055a8c'
-    };
-
-    function resizePopup() {
-      t.sizeTo(document.body).done();
-    }
 
     function showError(message) {
       document.getElementById('error').textContent = message;
+    }
+
+    // Color mapping function from the previous version
+    function getColorFromTrelloColor(color) {
+      switch (color) {
+        case 'yellow': return '#f2d600';
+        case 'orange': return '#ff9f1a';
+        case 'red': return '#eb5a46';
+        case 'purple': return '#c377e0';
+        case 'blue': return '#0079bf';
+        case 'green': return '#61bd4f';
+        case 'lime': return '#51e898';
+        case 'sky': return '#00c2e0';
+        case 'pink': return '#ff78cb';
+        case 'black': return '#344563';
+        case 'red_dark': return '#b04632';
+        case 'purple_dark': return '#89609e';
+        case 'blue_dark': return '#055a8c';
+        case 'green_dark': return '#519839';
+        case 'yellow_dark': return '#d9b51c';
+        case 'orange_dark': return '#d29034';
+        default: return '#b3bac5'; // Default gray color
+      }
     }
 
     // Load labels
@@ -124,7 +76,7 @@
           
           var colorSwatch = document.createElement('div');
           colorSwatch.className = 'label-color-swatch';
-          colorSwatch.style.backgroundColor = label.color;
+          colorSwatch.style.backgroundColor = getColorFromTrelloColor(label.color);
           
           var labelElement = document.createElement('label');
           labelElement.htmlFor = checkboxId;
@@ -142,106 +94,6 @@
         console.error('Error loading labels:', error);
         showError('Error loading labels: ' + error.message);
       });
-
-    // Load members
-    t.board('members')
-      .then(function(board) {
-        console.log('Members:', board.members);
-        var membersSelect = document.getElementById('members');
-        board.members.forEach(function(member) {
-          var option = document.createElement('option');
-          option.value = member.id;
-          option.textContent = member.fullName;
-          membersSelect.appendChild(option);
-        });
-      })
-      .catch(function(error) {
-        console.error('Error loading members:', error);
-        showError('Error loading members: ' + error.message);
-      });
-
-    document.getElementById('createButton').addEventListener('click', function() {
-      var selectedLabels = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-        .map(checkbox => checkbox.value);
-      var dueDate = document.getElementById('dueDate').value;
-      var selectedMembers = Array.from(document.getElementById('members').selectedOptions)
-        .map(option => option.value);
-      
-      // Disable the button to prevent multiple submissions
-      this.disabled = true;
-      this.textContent = 'Creating Cards...';
-
-      t.getRestApi()
-        .then(function(restApi) {
-          return t.card('idList')
-            .then(function(card) {
-              var listId = card.idList;
-              
-              var createCard = function(name, labelIds) {
-                return restApi.post('/cards', {
-                  name: name,
-                  idList: listId,
-                  idLabels: labelIds,
-                  due: dueDate,
-                  idMembers: selectedMembers
-                });
-              };
-
-              var cardCreationPromises = [];
-
-              if (selectedLabels.length === 0) {
-                // Create a single card with no labels
-                cardCreationPromises.push(createCard('New Sprint Card', []));
-              } else {
-                // Create a card for each selected label
-                cardCreationPromises = selectedLabels.map(function(labelId) {
-                  return createCard('Sprint Card for ' + labelId, [labelId]);
-                });
-              }
-
-              return Promise.all(cardCreationPromises);
-            });
-        })
-        .then(function(newCards) {
-          console.log('Created cards:', newCards);
-          
-          // Display success message
-          var messageDiv = document.createElement('div');
-          messageDiv.textContent = 'Successfully created ' + newCards.length + ' sprint card(s)!';
-          messageDiv.style.backgroundColor = '#5aac44';
-          messageDiv.style.color = 'white';
-          messageDiv.style.padding = '10px';
-          messageDiv.style.marginTop = '10px';
-          document.body.appendChild(messageDiv);
-
-          // Resize popup to fit new content
-          t.sizeTo(document.body);
-
-          // Close the popup after a short delay
-          setTimeout(function() {
-            t.closePopup();
-          }, 2000);
-        })
-        .catch(function(error) {
-          console.error('Error creating cards:', error);
-          
-          // Display error message
-          var messageDiv = document.createElement('div');
-          messageDiv.textContent = 'Error creating cards: ' + (error.message || 'Unknown error');
-          messageDiv.style.backgroundColor = '#eb5a46';
-          messageDiv.style.color = 'white';
-          messageDiv.style.padding = '10px';
-          messageDiv.style.marginTop = '10px';
-          document.body.appendChild(messageDiv);
-
-          // Re-enable the button
-          this.disabled = false;
-          this.textContent = 'Create Sprint Cards';
-
-          // Resize popup to fit new content
-          t.sizeTo(document.body);
-        });
-    });
 
     // Rest of your existing JavaScript code...
   </script>
