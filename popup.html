@@ -63,9 +63,53 @@
       appName: 'Sprint Cards Power-Up'
     });
 
-    function showError(message) {
-      document.getElementById('error').textContent = message;
+    // Global variables to store our data
+    var allBoards = [];
+    var sprintBoardLists = [];
+
+    // Function to get all boards in the workspace
+    function getAllBoards() {
+      return t.organization('boards')
+        .then(function(organization) {
+          allBoards = organization.boards;
+          console.log('All Boards:', allBoards);
+          return allBoards;
+        })
+        .catch(function(error) {
+          console.error('Error fetching boards:', error);
+        });
     }
+
+    // Function to get all lists on the "Sprint" board
+    function getSprintBoardLists() {
+      return t.board('all')
+        .then(function(board) {
+          if (board.name === "Sprint") {
+            sprintBoardLists = board.lists;
+            console.log('Sprint Board Lists:', sprintBoardLists);
+            return sprintBoardLists;
+          } else {
+            console.log('Current board is not the Sprint board');
+            sprintBoardLists = [];
+            return [];
+          }
+        })
+        .catch(function(error) {
+          console.error('Error fetching Sprint board lists:', error);
+        });
+    }
+
+    // Function to initialize our data
+    function initializeData() {
+      return Promise.all([getAllBoards(), getSprintBoardLists()]);
+    }
+
+    // Call initializeData when the popup loads
+    initializeData().then(() => {
+      console.log('Data initialization complete');
+      // Here you could enable UI elements or perform other actions
+      // that depend on this data being loaded
+    });
 
     // Color mapping function from the previous version
     function getColorFromTrelloColor(color) {
@@ -152,11 +196,26 @@
       var selectedMembers = Array.from(document.getElementById('members').selectedOptions)
         .map(option => option.value);
       
+      // Log the selected data
+      console.log('Selected Labels:', selectedLabels);
+      console.log('Selected Due Date:', dueDate);
+      console.log('Selected Members:', selectedMembers);
+
+      // Log the stored board and list data
+      console.log('All Boards (from stored data):', allBoards);
+      console.log('Sprint Board Lists (from stored data):', sprintBoardLists);
+
       // Disable the button to prevent multiple submissions
       this.disabled = true;
       this.textContent = 'Creating Cards...';
 
-      // Your existing card creation code here...
+      // For now, we'll just re-enable the button after a short delay
+      setTimeout(() => {
+        this.disabled = false;
+        this.textContent = 'Create Sprint Cards';
+      }, 2000);
+
+      // TODO: Implement card creation logic here
     });
 
     // Rest of your existing JavaScript code...
