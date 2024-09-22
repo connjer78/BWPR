@@ -14,14 +14,25 @@
       margin-right: 10px; 
     }
     .label-name { color: #000; }
+    .section { margin-bottom: 20px; }
   </style>
 </head>
 <body>
   <div id="error" class="error"></div>
   <div id="content">
-    <!-- Your existing HTML content here -->
-    <div id="labels"></div>
-    <!-- Rest of your HTML -->
+    <div class="section">
+      <h3>Labels</h3>
+      <div id="labels"></div>
+    </div>
+    <div class="section">
+      <h3>Due Date</h3>
+      <input type="date" id="dueDate">
+    </div>
+    <div class="section">
+      <h3>Members</h3>
+      <select id="members" multiple></select>
+    </div>
+    <button id="createButton" class="mod-primary">Create Sprint Cards</button>
   </div>
   <script>
     var TRELLO_APP_KEY = '18f0d2661292b35d137bdaa4013eb249';
@@ -93,6 +104,23 @@
       .catch(function(error) {
         console.error('Error loading labels:', error);
         showError('Error loading labels: ' + error.message);
+      });
+
+    // Load members
+    t.board('members')
+      .then(function(board) {
+        console.log('Members:', board.members);
+        var membersSelect = document.getElementById('members');
+        board.members.forEach(function(member) {
+          var option = document.createElement('option');
+          option.value = member.id;
+          option.textContent = member.fullName;
+          membersSelect.appendChild(option);
+        });
+      })
+      .catch(function(error) {
+        console.error('Error loading members:', error);
+        showError('Error loading members: ' + error.message);
       });
 
     // Rest of your existing JavaScript code...
