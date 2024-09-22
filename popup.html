@@ -99,9 +99,92 @@
         });
     }
 
+    // Function to get the display color for a label
+    function getLabelColor(color) {
+      const colorMap = {
+        'green': '#61bd4f',
+        'yellow': '#f2d600',
+        'orange': '#ff9f1a',
+        'red': '#eb5a46',
+        'purple': '#c377e0',
+        'blue': '#0079bf',
+        'sky': '#00c2e0',
+        'lime': '#51e898',
+        'pink': '#ff78cb',
+        'black': '#344563',
+        'green_dark': '#519839',
+        'yellow_dark': '#d9b51c',
+        'orange_dark': '#cd8313',
+        'red_dark': '#b04632',
+        'purple_dark': '#89609e',
+        'blue_dark': '#055a8c',
+        'sky_dark': '#0098b7',
+        'lime_dark': '#4bbf6b',
+        'pink_dark': '#c9558f',
+        'black_dark': '#091e42',
+        'green_light': '#9ee9a8',
+        'yellow_light': '#fdf475',
+        'orange_light': '#fdc788',
+        'red_light': '#efb3ab',
+        'purple_light': '#dfc0eb',
+        'blue_light': '#8bbdd9',
+        'sky_light': '#8fdfeb',
+        'lime_light': '#b3f1d0',
+        'pink_light': '#f5b6d0',
+        'black_light': '#b3bac5'
+      };
+      return colorMap[color] || color;
+    }
+
+    // Function to populate labels
+    function populateLabels() {
+      return t.card('labels')
+        .then(function(card) {
+          var labelsContainer = document.getElementById('labels');
+          labelsContainer.innerHTML = '';
+          card.labels.forEach(function(label) {
+            var labelContainer = document.createElement('div');
+            labelContainer.className = 'label-container';
+            
+            var checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = label.id;
+            checkbox.className = 'label-checkbox';
+            
+            var colorSwatch = document.createElement('div');
+            colorSwatch.className = 'label-color-swatch';
+            colorSwatch.style.backgroundColor = getLabelColor(label.color);
+            
+            var labelName = document.createElement('span');
+            labelName.className = 'label-name';
+            labelName.textContent = label.name || label.color;
+            
+            labelContainer.appendChild(checkbox);
+            labelContainer.appendChild(colorSwatch);
+            labelContainer.appendChild(labelName);
+            labelsContainer.appendChild(labelContainer);
+          });
+        });
+    }
+
+    // Function to populate members
+    function populateMembers() {
+      return t.board('members')
+        .then(function(board) {
+          var membersSelect = document.getElementById('members');
+          membersSelect.innerHTML = '';
+          board.members.forEach(function(member) {
+            var option = document.createElement('option');
+            option.value = member.id;
+            option.textContent = member.fullName;
+            membersSelect.appendChild(option);
+          });
+        });
+    }
+
     // Function to initialize our data
     function initializeData() {
-      return Promise.all([getAllBoards(), getSprintBoardLists()]);
+      return Promise.all([getAllBoards(), getSprintBoardLists(), populateLabels(), populateMembers()]);
     }
 
     // Call initializeData when the popup loads
@@ -139,8 +222,6 @@
 
       // TODO: Implement card creation logic here
     });
-
-    // Rest of your existing JavaScript code...
   </script>
 </body>
 </html>
