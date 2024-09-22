@@ -155,24 +155,23 @@
           var listId = card.idList;
           var cardCreationPromises = [];
 
-          if (selectedLabels.length === 0) {
-            // Create a single card with no labels
-            cardCreationPromises.push(t.post('cards', {
-              name: 'New Sprint Card',
+          function createCard(name, labelIds) {
+            return t.rest('POST', 'cards', {
+              name: name,
               idList: listId,
+              idLabels: labelIds,
               due: dueDate,
               idMembers: selectedMembers
-            }));
+            });
+          }
+
+          if (selectedLabels.length === 0) {
+            // Create a single card with no labels
+            cardCreationPromises.push(createCard('New Sprint Card', []));
           } else {
             // Create a card for each selected label
             cardCreationPromises = selectedLabels.map(function(label) {
-              return t.post('cards', {
-                name: label.name + ' Sprint Card',
-                idList: listId,
-                idLabels: [label.id],
-                due: dueDate,
-                idMembers: selectedMembers
-              });
+              return createCard(label.name + ' Sprint Card', [label.id]);
             });
           }
 
@@ -203,7 +202,7 @@
           
           // Display error message
           var messageDiv = document.createElement('div');
-          messageDiv.textContent = 'Error creating cards: ' + error.message;
+          messageDiv.textContent = 'Error creating cards: ' + (error.message || 'Unknown error');
           messageDiv.style.backgroundColor = '#eb5a46';
           messageDiv.style.color = 'white';
           messageDiv.style.padding = '10px';
