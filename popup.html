@@ -28,14 +28,39 @@
 </head>
 <body>
   <h2>Create Sprint Cards</h2>
-  <div class="update-message">Debugging color issues. (Updated version V5)</div>
+  <div class="update-message">Correcting color display. (Updated version V6)</div>
   <div id="labels">Loading labels...</div>
   <button class="mod-primary" id="createButton">Create Sprint Cards</button>
   <script>
     var t = TrelloPowerUp.iframe();
     
-    // Immediately log a message to check if console.log is working
     console.log('Popup script is running');
+
+    // Updated color mapping
+    var colorMap = {
+      'green': '#61bd4f',
+      'yellow': '#f2d600',
+      'orange': '#ff9f1a',
+      'red': '#eb5a46',
+      'purple': '#c377e0',
+      'blue': '#0079bf',
+      'sky': '#00c2e0',
+      'lime': '#51e898',
+      'pink': '#ff78cb',
+      'black': '#344563',
+      'green_light': '#7bc86c',
+      'yellow_light': '#f5dd29',
+      'orange_light': '#ffb968',
+      'red_light': '#ef7564',
+      'purple_light': '#cd8de5',
+      'blue_light': '#5ba4cf',
+      'green_dark': '#519839',
+      'yellow_dark': '#d9b51c',
+      'orange_dark': '#d97a1e',
+      'red_dark': '#b04632',
+      'purple_dark': '#89609e',
+      'blue_dark': '#055a8c'
+    };
 
     t.render(function(){
       console.log('t.render function called');
@@ -58,7 +83,7 @@
               
               var labelSpan = document.createElement('span');
               labelSpan.className = 'label-color';
-              labelSpan.style.backgroundColor = label.color || 'gray';
+              labelSpan.style.backgroundColor = colorMap[label.color] || label.color || '#b3bac5';
               
               var labelText = document.createElement('label');
               labelText.htmlFor = 'label-' + label.id;
