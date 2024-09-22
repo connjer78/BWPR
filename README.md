@@ -41,7 +41,7 @@ Note: The `authorize-callback.html` file is currently inactive but may be implem
 Ensure that your `manifest.json` file is correctly set up with the necessary permissions and capabilities for the Power-Up.
 
 ## Development Status
-This Power-Up is functional and can create new cards based on labels. It includes user authorization for enhanced security and uses the Trello REST API for card creation. Future improvements may include more customization options and refined error handling.
+This Power-Up is functional and can successfully create new cards based on labels. It includes user authorization for enhanced security and uses the Trello REST API for card creation. The Power-Up operates on the card and board level, creating new cards within the same board and list as the original card. It no longer checks for a specific "Sprint" board or fetches all boards in the workspace, focusing instead on the current board and card context. Future improvements may include more customization options and refined error handling.
 
 ## Contributing
 This is a personal project and is not currently open for contributions.

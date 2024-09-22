@@ -63,79 +63,6 @@
       appName: 'Sprint Cards Power-Up'
     });
 
-    // Global variables to store our data
-    var allBoards = [];
-    var sprintBoardLists = [];
-
-    // Function to get all boards in the workspace
-    function getAllBoards() {
-      return t.organization('boards')
-        .then(function(organization) {
-          allBoards = organization.boards;
-          console.log('All Boards:', allBoards);
-          return allBoards;
-        })
-        .catch(function(error) {
-          console.error('Error fetching boards:', error);
-        });
-    }
-
-    // Function to get all lists on the "Sprint" board
-    function getSprintBoardLists() {
-      return t.board('all')
-        .then(function(board) {
-          if (board.name === "Sprint") {
-            sprintBoardLists = board.lists;
-            console.log('Sprint Board Lists:', sprintBoardLists);
-            return sprintBoardLists;
-          } else {
-            console.log('Current board is not the Sprint board');
-            sprintBoardLists = [];
-            return [];
-          }
-        })
-        .catch(function(error) {
-          console.error('Error fetching Sprint board lists:', error);
-        });
-    }
-
-    // Function to get the display color for a label
-    function getLabelColor(color) {
-      const colorMap = {
-        'green': '#61bd4f',
-        'yellow': '#f2d600',
-        'orange': '#ff9f1a',
-        'red': '#eb5a46',
-        'purple': '#c377e0',
-        'blue': '#0079bf',
-        'sky': '#00c2e0',
-        'lime': '#51e898',
-        'pink': '#ff78cb',
-        'black': '#344563',
-        'green_dark': '#519839',
-        'yellow_dark': '#d9b51c',
-        'orange_dark': '#cd8313',
-        'red_dark': '#b04632',
-        'purple_dark': '#89609e',
-        'blue_dark': '#055a8c',
-        'sky_dark': '#0098b7',
-        'lime_dark': '#4bbf6b',
-        'pink_dark': '#c9558f',
-        'black_dark': '#091e42',
-        'green_light': '#9ee9a8',
-        'yellow_light': '#fdf475',
-        'orange_light': '#fdc788',
-        'red_light': '#efb3ab',
-        'purple_light': '#dfc0eb',
-        'blue_light': '#8bbdd9',
-        'sky_light': '#8fdfeb',
-        'lime_light': '#b3f1d0',
-        'pink_light': '#f5b6d0',
-        'black_light': '#b3bac5'
-      };
-      return colorMap[color] || color;
-    }
-
     // Function to populate labels
     function populateLabels() {
       return t.card('labels')
@@ -184,7 +111,7 @@
 
     // Function to initialize our data
     function initializeData() {
-      return Promise.all([getAllBoards(), getSprintBoardLists(), populateLabels(), populateMembers()]);
+      return Promise.all([populateLabels(), populateMembers()]);
     }
 
     // Call initializeData when the popup loads
