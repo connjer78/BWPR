@@ -63,6 +63,44 @@
       appName: 'Sprint Cards Power-Up'
     });
 
+    // Function to get the color for a label
+    function getLabelColor(color) {
+      const colorMap = {
+        'yellow': '#f2d600',
+        'purple': '#c377e0',
+        'blue': '#0079bf',
+        'red': '#eb5a46',
+        'green': '#61bd4f',
+        'orange': '#ff9f1a',
+        'black': '#344563',
+        'sky': '#00c2e0',
+        'pink': '#ff78cb',
+        'lime': '#51e898',
+        // Add these new colors
+        'yellow_dark': '#d9b51c',
+        'yellow_light': '#f5ea92',
+        'orange_dark': '#d29034',
+        'orange_light': '#fad29c',
+        'red_dark': '#b04632',
+        'red_light': '#efb3ab',
+        'purple_dark': '#89609e',
+        'purple_light': '#dfc0eb',
+        'blue_dark': '#055a8c',
+        'blue_light': '#8bbdd9',
+        'sky_dark': '#0098b7',
+        'sky_light': '#9adbe8',
+        'green_dark': '#519839',
+        'green_light': '#b3f1d0',
+        'pink_dark': '#c9558f',
+        'pink_light': '#ffcee0',
+        'lime_dark': '#4bbf6b',
+        'lime_light': '#b6f1cb',
+        'black_dark': '#091e42',
+        'black_light': '#97a0af'
+      };
+      return colorMap[color] || '#b3bac5'; // default gray if color not found
+    }
+
     // Function to populate labels
     function populateLabels() {
       return t.card('labels')
