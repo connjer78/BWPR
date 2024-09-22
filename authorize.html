@@ -16,7 +16,7 @@
       
       document.getElementById('authorizeButton').addEventListener('click', function() {
         t.getRestApi()
-          .authorize({ scope: 'read,write' })
+          .authorize({ scope: 'read,write,organization' })
           .then(function() {
             t.closePopup();
           })

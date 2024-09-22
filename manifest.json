@@ -11,5 +11,10 @@
         "iframe": {
             "url": "https://connjer78.github.io/BWPR/index.html"
         }
-    }
+    },
+    "permissions": [
+        "read",
+        "write",
+        "organization"
+    ]
 }
