@@ -153,19 +153,9 @@
       this.disabled = true;
       this.textContent = 'Creating Cards...';
 
-      t.getRestApi()
-        .isAuthorized()
-        .then(function(isAuthorized) {
-          if (isAuthorized) {
-            return t.getRestApi();
-          }
-          return t.popup({
-            type: 'authorize',
-            args: { scope: 'read,write' }
-          })
-          .then(function() {
-            return t.getRestApi();
-          });
+      t.authorize()
+        .then(function() {
+          return t.getRestApi();
         })
         .then(function(restApi) {
           return t.card('idList')
