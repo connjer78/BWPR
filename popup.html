@@ -159,21 +159,7 @@
           if (isAuthorized) {
             return t.getRestApi();
           } else {
-            return t.popup({
-              type: 'confirm',
-              title: 'Authorization Required',
-              message: 'This Power-Up needs authorization to create cards. Do you want to authorize it?',
-              confirmText: 'Authorize',
-              onConfirm: function(t) {
-                return t.authorize({
-                  scope: 'write',
-                  expiration: 'never'
-                })
-                .then(function() {
-                  return t.getRestApi();
-                });
-              }
-            });
+            throw new Error('Not authorized');
           }
         })
         .then(function(restApi) {

@@ -2,10 +2,9 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css">
-    <script src="https://p.trellocdn.com/power-up.min.js"></script>
 </head>
 <body>
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
     <script>
         var TRELLO_APP_KEY = '18f0d2661292b35d137bdaa4013eb249';
 
@@ -23,7 +22,19 @@
                     }
                 }];
             },
-            // Other capabilities...
+            'authorization-status': function(t, options){
+                return t.get('member', 'private', 'authToken')
+                .then(function(authToken) {
+                    return { authorized: authToken != null };
+                });
+            },
+            'show-authorization': function(t, options){
+                return t.popup({
+                    title: 'Authorize Sprint Cards Power-Up',
+                    url: './authorize.html',
+                    height: 140,
+                });
+            }
         }, {
             appKey: TRELLO_APP_KEY,
             appName: 'Sprint Cards Power-Up'

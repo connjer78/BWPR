@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css">
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  </head>
+  <body>
+    <button id="authorizeButton" type="button" class="mod-primary">Authorize</button>
+    <script>
+      var t = window.TrelloPowerUp.iframe();
+      var TRELLO_APP_KEY = '18f0d2661292b35d137bdaa4013eb249';
+
+      document.getElementById('authorizeButton').addEventListener('click', function() {
+        t.authorize(TRELLO_APP_KEY, {
+          scope: 'read,write',
+          expiration: 'never',
+          success: function() {
+            t.closePopup();
+          },
+          error: function() {
+            console.log('Failed to authorize');
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
