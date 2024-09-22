@@ -140,7 +140,7 @@
 
     document.getElementById('createButton').addEventListener('click', function() {
       var selectedLabels = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-        .map(checkbox => ({id: checkbox.value, name: checkbox.nextElementSibling.nextElementSibling.textContent}));
+        .map(checkbox => checkbox.value);
       var dueDate = document.getElementById('dueDate').value;
       var selectedMembers = Array.from(document.getElementById('members').selectedOptions)
         .map(option => option.value);
@@ -153,40 +153,44 @@
       t.card('idList')
         .then(function(card) {
           var listId = card.idList;
-          var cardsToCreate = [];
+          
+          // Get the authenticated REST API object
+          return t.getRestApi()
+            .then(function(restApi) {
+              var cardCreationPromises = [];
 
-          if (selectedLabels.length === 0) {
-            // Create a single card with no labels
-            cardsToCreate.push({
-              name: 'New Sprint Card',
-              idList: listId,
-              due: dueDate,
-              idMembers: selectedMembers
-            });
-          } else {
-            // Create a card for each selected label
-            cardsToCreate = selectedLabels.map(function(label) {
-              return {
-                name: label.name + ' Sprint Card',
-                idList: listId,
-                idLabels: [label.id],
-                due: dueDate,
-                idMembers: selectedMembers
-              };
-            });
-          }
+              if (selectedLabels.length === 0) {
+                // Create a single card with no labels
+                cardCreationPromises.push(
+                  restApi.post('/cards', {
+                    name: 'New Sprint Card',
+                    idList: listId,
+                    due: dueDate,
+                    idMembers: selectedMembers
+                  })
+                );
+              } else {
+                // Create a card for each selected label
+                cardCreationPromises = selectedLabels.map(function(labelId) {
+                  return restApi.post('/cards', {
+                    name: 'Sprint Card for ' + labelId,
+                    idList: listId,
+                    idLabels: [labelId],
+                    due: dueDate,
+                    idMembers: selectedMembers
+                  });
+                });
+              }
 
-          // Store the card creation data
-          return t.set('card', 'shared', 'cardsToCreate', cardsToCreate);
+              return Promise.all(cardCreationPromises);
+            });
         })
-        .then(function() {
-          // Trigger the callback to create the cards
-          return t.closePopup();
-        })
-        .then(function() {
+        .then(function(newCards) {
+          console.log('Created cards:', newCards);
+          
           // Display success message
           var messageDiv = document.createElement('div');
-          messageDiv.textContent = 'Card creation process initiated. Check your board for new cards.';
+          messageDiv.textContent = 'Successfully created ' + newCards.length + ' sprint card(s)!';
           messageDiv.style.backgroundColor = '#5aac44';
           messageDiv.style.color = 'white';
           messageDiv.style.padding = '10px';
@@ -195,13 +199,18 @@
 
           // Resize popup to fit new content
           resizePopup();
+
+          // Close the popup after a short delay
+          setTimeout(function() {
+            t.closePopup();
+          }, 2000);
         })
         .catch(function(error) {
-          console.error('Error initiating card creation:', error);
+          console.error('Error creating cards:', error);
           
           // Display error message
           var messageDiv = document.createElement('div');
-          messageDiv.textContent = 'Error initiating card creation: ' + (error.message || 'Unknown error');
+          messageDiv.textContent = 'Error creating cards: ' + (error.message || 'Unknown error');
           messageDiv.style.backgroundColor = '#eb5a46';
           messageDiv.style.color = 'white';
           messageDiv.style.padding = '10px';
