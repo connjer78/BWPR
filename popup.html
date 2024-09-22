@@ -52,7 +52,6 @@
     <div class="section">
       <h3>Due Date</h3>
       <input type="date" id="dueDate">
-      <input type="time" id="dueTime">
     </div>
     <div class="section">
       <h3>Members</h3>
@@ -171,15 +170,15 @@
       var selectedLabels = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
         .map(checkbox => checkbox.value);
       var dueDateInput = document.getElementById('dueDate').value;
-      var dueTimeInput = document.getElementById('dueTime').value;
       var selectedMembers = Array.from(document.getElementById('members').selectedOptions)
         .map(option => option.value);
       
-      // Combine date and time, then convert to UTC
+      // Convert the date to UTC, setting the time to the end of the day
       var dueDate = null;
-      if (dueDateInput && dueTimeInput) {
-        var dateTimeString = `${dueDateInput}T${dueTimeInput}`;
-        dueDate = new Date(dateTimeString).toISOString();
+      if (dueDateInput) {
+        var date = new Date(dueDateInput);
+        date.setUTCHours(23, 59, 59, 999);  // Set to end of day in UTC
+        dueDate = date.toISOString();
       }
 
       this.disabled = true;
