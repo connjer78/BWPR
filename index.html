@@ -14,38 +14,13 @@
                     icon: 'https://connjer78.github.io/BWPR/assets/rocketship.PNG',
                     text: 'Sprint It!',
                     callback: function(t) {
-                        return t.getRestApi()
-                            .isAuthorized()
-                            .then(function(isAuthorized) {
-                                if (isAuthorized) {
-                                    return t.popup({
-                                        title: "Create Sprint Cards",
-                                        url: './popup.html',
-                                        height: 300
-                                    });
-                                } else {
-                                    return t.popup({
-                                        title: 'Authorize Sprint Cards Power-Up',
-                                        url: './authorize.html',
-                                        height: 140,
-                                    });
-                                }
-                            });
+                        return t.popup({
+                            title: "Create Sprint Cards",
+                            url: './popup.html',
+                            height: 300
+                        });
                     }
                 }];
-            },
-            'authorization-status': function(t, options){
-                return t.get('member', 'private', 'authToken')
-                .then(function(authToken) {
-                    return { authorized: authToken != null };
-                });
-            },
-            'show-authorization': function(t, options){
-                return t.popup({
-                    title: 'Authorize Sprint Cards Power-Up',
-                    url: './authorize.html',
-                    height: 140,
-                });
             }
         }, {
             appKey: TRELLO_APP_KEY,
