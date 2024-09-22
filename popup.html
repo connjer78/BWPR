@@ -51,7 +51,11 @@
   </div>
   <button class="mod-primary" id="createButton">Create Sprint Cards</button>
   <script>
-    var t = TrelloPowerUp.iframe();
+    var TRELLO_APP_KEY = '18f0d2661292b35d137bdaa4013eb249';
+    var t = TrelloPowerUp.iframe({
+      appKey: TRELLO_APP_KEY,
+      appName: 'Sprint Cards Power-Up'
+    });
     
     // Color mapping
     var colorMap = {

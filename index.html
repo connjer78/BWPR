@@ -1,27 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css">
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
 </head>
 <body>
     <script>
-        var GRAY_ICON = 'https://connjer78.github.io/BWPR/assets/rocketship.PNG';
-        
-        TrelloPowerUp.initialize({
+        var TRELLO_APP_KEY = '18f0d2661292b35d137bdaa4013eb249';
+
+        window.TrelloPowerUp.initialize({
             'card-buttons': function(t, options) {
                 return [{
-                    icon: GRAY_ICON,
+                    icon: 'https://connjer78.github.io/BWPR/assets/rocketship.PNG',
                     text: 'Sprint It!',
                     callback: function(t) {
                         return t.popup({
-                            title: 'Create Sprint Cards',
+                            title: "Create Sprint Cards",
                             url: './popup.html',
                             height: 300
                         });
                     }
                 }];
-            }
+            },
+            // Other capabilities...
+        }, {
+            appKey: TRELLO_APP_KEY,
+            appName: 'Sprint Cards Power-Up'
         });
     </script>
 </body>
