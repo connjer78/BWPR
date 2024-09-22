@@ -6,6 +6,7 @@
 ## Features
 - Adds a "Sprint It!" button to Trello cards
 - Creates new cards based on the labels of the selected card
+- Names new cards in the format "{sourceCardName}: {labelName}"
 - Allows selection of due dates and team members for the new cards
 - Automatically creates cards in the same list as the original card
 - Copies selected labels to the new cards
@@ -41,7 +42,7 @@ Note: The `authorize-callback.html` file is currently inactive but may be implem
 Ensure that your `manifest.json` file is correctly set up with the necessary permissions and capabilities for the Power-Up.
 
 ## Development Status
-This Power-Up is functional and can successfully create new cards based on labels. It includes user authorization for enhanced security and uses the Trello REST API for card creation. The Power-Up operates on the card and board level, creating new cards within the same board and list as the original card. It displays all available label colors, including light and dark variants, for a comprehensive user experience. Future improvements may include more customization options and refined error handling.
+This Power-Up is functional and can successfully create new cards based on labels. It includes user authorization for enhanced security and uses the Trello REST API for card creation. The Power-Up operates on the card and board level, creating new cards within the same board and list as the original card. It displays all available label colors, including light and dark variants, for a comprehensive user experience. New cards are named using the format "{sourceCardName}: {labelName}" for clear identification. Future improvements may include more customization options and refined error handling.
 
 ## Contributing
 This is a personal project and is not currently open for contributions.

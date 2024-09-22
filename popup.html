@@ -166,23 +166,15 @@
       var selectedMembers = Array.from(document.getElementById('members').selectedOptions)
         .map(option => option.value);
       
-      // Disable the button to prevent multiple submissions
       this.disabled = true;
       this.textContent = 'Creating Cards...';
 
-      // Get the REST API client
       t.getRestApi()
         .isAuthorized()
         .then(function(isAuthorized) {
           if (!isAuthorized) {
-            return t.popup({
-              title: 'Authorize to Create Cards',
-              url: './authorize.html',
-              height: 140,
-            });
+            throw new Error('Not authorized');
           }
-        })
-        .then(function() {
           return Promise.all([
             t.card('all'),
             t.list('id', 'name'),
@@ -190,17 +182,17 @@
           ]);
         })
         .then(function([card, list, token]) {
-          // Create a new card for each selected label
           var createPromises = selectedLabels.map(function(labelId) {
             var label = card.labels.find(l => l.id === labelId);
+            var newCardName = `${card.name}: ${label.name || label.color}`;
             return fetch(`https://api.trello.com/1/cards?key=${TRELLO_APP_KEY}&token=${token}`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                name: label.name || 'New Sprint Card',
-                desc: 'Created from "' + card.name + '"',
+                name: newCardName,
+                desc: `Created from "${card.name}"`,
                 pos: 'top',
                 due: dueDate,
                 idList: list.id,
@@ -221,7 +213,6 @@
           document.getElementById('error').textContent = 'Error creating cards. Please try again.';
         })
         .finally(function() {
-          // Re-enable the button
           document.getElementById('createButton').disabled = false;
           document.getElementById('createButton').textContent = 'Create Sprint Cards';
         });
