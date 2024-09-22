@@ -176,8 +176,8 @@
       // Convert the date to 5:00 PM in local time, then to UTC
       var dueDate = null;
       if (dueDateInput) {
-        var date = new Date(dueDateInput);
-        date.setHours(17, 0, 0, 0);  // Set to 5:00 PM local time
+        var [year, month, day] = dueDateInput.split('-').map(Number);
+        var date = new Date(year, month - 1, day, 17, 0, 0, 0);  // month is 0-indexed
         dueDate = date.toISOString();
       }
 
