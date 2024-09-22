@@ -28,13 +28,13 @@
 </head>
 <body>
   <h2>Create Sprint Cards</h2>
-  <div class="update-message">Colors should match now. (Updated version)</div>
+  <div class="update-message">Colors should match now. (Updated version V2)</div>
   <div id="labels">Loading labels...</div>
   <button class="mod-primary" id="createButton">Create Sprint Cards</button>
   <script>
     var t = TrelloPowerUp.iframe();
     
-    // Trello color mapping
+    // Updated Trello color mapping
     var colorMap = {
       'green': '#61bd4f',
       'yellow': '#f2d600',
@@ -45,7 +45,8 @@
       'sky': '#00c2e0',
       'lime': '#51e898',
       'pink': '#ff78cb',
-      'black': '#344563'
+      'black': '#344563',
+      'none': '#b3bac5'  // for "no color" labels
     };
 
     t.render(function(){
@@ -65,11 +66,11 @@
             
             var labelSpan = document.createElement('span');
             labelSpan.className = 'label-color';
-            labelSpan.style.backgroundColor = colorMap[label.color] || label.color;
+            labelSpan.style.backgroundColor = colorMap[label.color] || '#b3bac5'; // Default to gray if color not found
             
             var labelText = document.createElement('label');
             labelText.htmlFor = 'label-' + label.id;
-            labelText.textContent = label.name || label.color;
+            labelText.textContent = label.name || (label.color === 'none' ? 'No color' : label.color);
             
             labelItem.appendChild(checkbox);
             labelItem.appendChild(labelSpan);
