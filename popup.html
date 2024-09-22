@@ -39,7 +39,7 @@
 </head>
 <body>
   <h2>Create Sprint Cards</h2>
-  <div class="update-message">Implementing dynamic sizing. (Updated version V9)</div>
+  <div class="update-message">Cleaned up label display. (Updated version V10)</div>
   <div id="labels">Loading labels...</div>
   <div class="form-group">
     <label for="dueDate">Due Date:</label>
@@ -108,7 +108,7 @@
             
             var labelText = document.createElement('label');
             labelText.htmlFor = 'label-' + label.id;
-            labelText.textContent = `${label.name || 'No name'} (${label.color || 'No color'})`;
+            labelText.textContent = label.name;
             
             labelItem.appendChild(checkbox);
             labelItem.appendChild(labelSpan);
