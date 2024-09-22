@@ -206,6 +206,50 @@
         });
     }
 
+    // Add these functions after your existing code
+
+    function findSprintBoard() {
+      return t.organization('id')
+        .then(function(organization) {
+          return t.getRestApi().getToken()
+            .then(function(token) {
+              return fetch(`https://api.trello.com/1/organizations/${organization.id}/boards?filter=open&fields=name,id&key=${TRELLO_APP_KEY}&token=${token}`)
+                .then(response => response.json())
+                .then(boards => {
+                  console.log('All boards:', boards);
+                  const sprintBoard = boards.find(board => board.name === "Sprint");
+                  if (sprintBoard) {
+                    console.log('Found Sprint board:', sprintBoard);
+                    return sprintBoard;
+                  } else {
+                    console.error('Sprint board not found');
+                    throw new Error('Sprint board not found');
+                  }
+                });
+            });
+        });
+    }
+
+    function findBacklogList(boardId) {
+      return t.getRestApi().getToken()
+        .then(function(token) {
+          return fetch(`https://api.trello.com/1/boards/${boardId}/lists?fields=name,id&key=${TRELLO_APP_KEY}&token=${token}`)
+            .then(response => response.json())
+            .then(lists => {
+              console.log('All lists in Sprint board:', lists);
+              const backlogList = lists.find(list => list.name === "Backlog");
+              if (backlogList) {
+                console.log('Found Backlog list:', backlogList);
+                return backlogList;
+              } else {
+                console.error('Backlog list not found');
+                throw new Error('Backlog list not found');
+              }
+            });
+        });
+    }
+
+    // Modify the createButton event listener to use these new functions
     document.getElementById('createButton').addEventListener('click', function() {
       var selectedLabels = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
         .map(checkbox => ({
@@ -218,74 +262,24 @@
       this.disabled = true;
       this.textContent = 'Creating Cards...';
 
-      t.getRestApi()
-        .isAuthorized()
-        .then(function(isAuthorized) {
-          if (!isAuthorized) {
-            throw new Error('Not authorized');
-          }
-          return Promise.all([
-            t.card('all'),  // This will fetch all card data including the description
-            t.list('id', 'name'),
-            t.getRestApi().getToken()
-          ]);
+      findSprintBoard()
+        .then(sprintBoard => findBacklogList(sprintBoard.id))
+        .then(backlogList => {
+          console.log('Ready to create cards in Backlog list:', backlogList);
+          // Here, you would proceed with card creation using backlogList.id
+          // For now, we'll just log the information
+          console.log('Selected labels:', selectedLabels);
+          console.log('Selected members:', selectedMembers);
+          // ... rest of your card creation logic ...
         })
-        .then(function([card, list, token]) {
-          var createPromises = selectedLabels.map(function(labelData) {
-            var label = card.labels.find(l => l.id === labelData.id);
-            var newCardName = `${card.name}: ${label.name || label.color}`;
-            var dueDate = null;
-            if (labelData.dueDate) {
-              var [year, month, day] = labelData.dueDate.split('-').map(Number);
-              var date = new Date(year, month - 1, day, 17, 0, 0, 0);  // month is 0-indexed
-              dueDate = date.toISOString();
-            }
-            
-            return fetch(`https://api.trello.com/1/cards?key=${TRELLO_APP_KEY}&token=${token}`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                name: newCardName,
-                desc: card.desc,
-                pos: 'top',
-                due: dueDate,
-                idList: list.id,
-                idMembers: selectedMembers,
-                idLabels: [labelData.id]
-              })
-            })
-            .then(response => response.json())
-            .then(newCard => {
-              // Add source card as attachment to new card
-              return fetch(`https://api.trello.com/1/cards/${newCard.id}/attachments?key=${TRELLO_APP_KEY}&token=${token}`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  name: `Source: ${card.name}`,
-                  url: `https://trello.com/c/${card.shortLink}`
-                })
-              }).then(() => newCard);
-            });
-          });
-
-          return Promise.all(createPromises);
+        .catch(error => {
+          console.error('Error:', error);
+          document.getElementById('error').textContent = 'Error finding Sprint board or Backlog list. Please try again.';
         })
-        .then(function(newCards) {
-          console.log('Created cards:', newCards);
-          t.closePopup();
-        })
-        .catch(function(error) {
-          console.error('Error creating cards:', error);
-          document.getElementById('error').textContent = 'Error creating cards. Please try again.';
-        })
-        .finally(function() {
+        .finally(() => {
           this.disabled = false;
           this.textContent = 'Create Sprint Cards';
-        }.bind(this));
+        });
     });
 
     // Initialize
