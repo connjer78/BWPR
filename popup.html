@@ -140,27 +140,83 @@
 
     document.getElementById('createButton').addEventListener('click', function() {
       var selectedLabels = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-        .map(checkbox => checkbox.value);
+        .map(checkbox => ({id: checkbox.value, name: checkbox.nextElementSibling.nextElementSibling.textContent}));
       var dueDate = document.getElementById('dueDate').value;
       var selectedMembers = Array.from(document.getElementById('members').selectedOptions)
         .map(option => option.value);
       
-      console.log('Selected labels:', selectedLabels);
-      console.log('Due Date:', dueDate);
-      console.log('Selected Members:', selectedMembers);
+      // Disable the button to prevent multiple submissions
+      this.disabled = true;
+      this.textContent = 'Creating Cards...';
 
-      // Display a message in the popup
-      var messageDiv = document.createElement('div');
-      messageDiv.textContent = 'Data collected successfully! Check console for details.';
-      messageDiv.style.backgroundColor = '#d4edf7';
-      messageDiv.style.padding = '10px';
-      messageDiv.style.marginTop = '10px';
-      document.body.appendChild(messageDiv);
+      // Get the current list ID
+      t.card('idList')
+        .then(function(card) {
+          var listId = card.idList;
+          var cardCreationPromises = [];
 
-      // Close the popup after a short delay
-      setTimeout(function() {
-        t.closePopup();
-      }, 2000);
+          if (selectedLabels.length === 0) {
+            // Create a single card with no labels
+            cardCreationPromises.push(t.post('cards', {
+              name: 'New Sprint Card',
+              idList: listId,
+              due: dueDate,
+              idMembers: selectedMembers
+            }));
+          } else {
+            // Create a card for each selected label
+            cardCreationPromises = selectedLabels.map(function(label) {
+              return t.post('cards', {
+                name: label.name + ' Sprint Card',
+                idList: listId,
+                idLabels: [label.id],
+                due: dueDate,
+                idMembers: selectedMembers
+              });
+            });
+          }
+
+          return Promise.all(cardCreationPromises);
+        })
+        .then(function(newCards) {
+          console.log('Created cards:', newCards);
+          
+          // Display success message
+          var messageDiv = document.createElement('div');
+          messageDiv.textContent = 'Successfully created ' + newCards.length + ' sprint card(s)!';
+          messageDiv.style.backgroundColor = '#5aac44';
+          messageDiv.style.color = 'white';
+          messageDiv.style.padding = '10px';
+          messageDiv.style.marginTop = '10px';
+          document.body.appendChild(messageDiv);
+
+          // Resize popup to fit new content
+          resizePopup();
+
+          // Close the popup after a short delay
+          setTimeout(function() {
+            t.closePopup();
+          }, 2000);
+        })
+        .catch(function(error) {
+          console.error('Error creating cards:', error);
+          
+          // Display error message
+          var messageDiv = document.createElement('div');
+          messageDiv.textContent = 'Error creating cards: ' + error.message;
+          messageDiv.style.backgroundColor = '#eb5a46';
+          messageDiv.style.color = 'white';
+          messageDiv.style.padding = '10px';
+          messageDiv.style.marginTop = '10px';
+          document.body.appendChild(messageDiv);
+
+          // Re-enable the button
+          this.disabled = false;
+          this.textContent = 'Create Sprint Cards';
+
+          // Resize popup to fit new content
+          resizePopup();
+        });
     });
   </script>
 </body>
