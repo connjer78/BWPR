@@ -36,6 +36,8 @@
       height: 100px;
     }
     .error { color: red; }
+    .label-checkbox { margin-right: 10px; }
+    .label-name { display: inline-block; margin-right: 10px; }
   </style>
 </head>
 <body>
@@ -100,18 +102,25 @@
         console.log('Labels:', card.labels);
         var labelsContainer = document.getElementById('labels');
         card.labels.forEach(function(label) {
+          var checkboxId = 'label-' + label.id;
+          
           var checkbox = document.createElement('input');
           checkbox.type = 'checkbox';
-          checkbox.id = 'label-' + label.id;
+          checkbox.id = checkboxId;
           checkbox.value = label.id;
+          checkbox.className = 'label-checkbox';
           
-          var label = document.createElement('label');
-          label.htmlFor = 'label-' + label.id;
-          label.textContent = label.name || label.color;
+          var labelElement = document.createElement('label');
+          labelElement.htmlFor = checkboxId;
+          labelElement.className = 'label-name';
+          labelElement.textContent = label.name || label.color;
+          labelElement.style.color = label.color;
           
-          labelsContainer.appendChild(checkbox);
-          labelsContainer.appendChild(label);
-          labelsContainer.appendChild(document.createElement('br'));
+          var container = document.createElement('div');
+          container.appendChild(checkbox);
+          container.appendChild(labelElement);
+          
+          labelsContainer.appendChild(container);
         });
       })
       .catch(function(error) {
