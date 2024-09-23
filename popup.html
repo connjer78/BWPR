@@ -7,13 +7,12 @@
     body { 
       padding: 10px; 
       overflow-y: auto;
-      font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Noto Sans, Ubuntu, Droid Sans, Helvetica Neue, sans-serif;
     }
-    .error { color: red; margin-bottom: 10px; }
+    .error { color: var(--ds-icon-danger); margin-bottom: 10px; }
     .card-row {
       margin-bottom: 15px;
       padding: 10px;
-      background-color: #f4f5f7;
+      background-color: var(--ds-surface-sunken);
       border-radius: 3px;
     }
     .label-container {
@@ -28,25 +27,44 @@
       border-radius: 3px; 
       margin-right: 10px; 
     }
-    .label-name { color: #000; }
-    .date-input, .member-select {
+    .label-name { color: var(--ds-text); }
+    .date-input, .member-select-wrapper {
       width: 100%;
       margin-top: 5px;
-      padding: 5px;
       box-sizing: border-box;
+    }
+    .member-select-button {
+      width: 100%;
+      text-align: left;
+      padding: 5px;
+      background-color: var(--ds-surface);
+      border: 1px solid var(--ds-border);
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .member-options {
+      display: none;
+      position: absolute;
+      background-color: var(--ds-surface);
+      border: 1px solid var(--ds-border);
+      border-radius: 3px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+    .member-option {
+      padding: 5px;
+      cursor: pointer;
+    }
+    .member-option:hover {
+      background-color: var(--ds-background-neutral-hovered);
+    }
+    .member-option.selected {
+      background-color: var(--ds-background-neutral-selected);
     }
     #createButton {
       width: 100%;
       margin-top: 20px;
-      padding: 10px;
-      background-color: #5aac44;
-      color: white;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
-    }
-    #createButton:hover {
-      background-color: #519839;
     }
   </style>
 </head>
@@ -99,6 +117,56 @@
       return colors[color] || color;
     }
 
+    function createMultiSelect(members, labelId) {
+      var wrapper = document.createElement('div');
+      wrapper.className = 'member-select-wrapper';
+
+      var button = document.createElement('button');
+      button.className = 'member-select-button';
+      button.textContent = 'Select members';
+      button.dataset.labelId = labelId;
+
+      var options = document.createElement('div');
+      options.className = 'member-options';
+
+      members.forEach(function(member) {
+        var option = document.createElement('div');
+        option.className = 'member-option';
+        option.textContent = member.fullName;
+        option.dataset.memberId = member.id;
+        option.onclick = function() {
+          this.classList.toggle('selected');
+          updateButtonText(button, options);
+        };
+        options.appendChild(option);
+      });
+
+      button.onclick = function(e) {
+        e.stopPropagation();
+        options.style.display = options.style.display === 'block' ? 'none' : 'block';
+      };
+
+      document.addEventListener('click', function() {
+        options.style.display = 'none';
+      });
+
+      wrapper.appendChild(button);
+      wrapper.appendChild(options);
+
+      return wrapper;
+    }
+
+    function updateButtonText(button, options) {
+      var selectedOptions = options.querySelectorAll('.member-option.selected');
+      if (selectedOptions.length === 0) {
+        button.textContent = 'Select members';
+      } else if (selectedOptions.length === 1) {
+        button.textContent = selectedOptions[0].textContent;
+      } else {
+        button.textContent = selectedOptions.length + ' members selected';
+      }
+    }
+
     function populateCardRows() {
       return Promise.all([
         t.card('labels'),
@@ -138,25 +206,8 @@
           dateInput.className = 'date-input';
           dateInput.dataset.labelId = label.id;
 
-          // Member select dropdown
-          var memberSelect = document.createElement('select');
-          memberSelect.className = 'member-select';
-          memberSelect.dataset.labelId = label.id;
-          memberSelect.multiple = true;
-
-          var defaultOption = document.createElement('option');
-          defaultOption.value = '';
-          defaultOption.textContent = 'Select members';
-          defaultOption.disabled = true;
-          defaultOption.selected = true;
-          memberSelect.appendChild(defaultOption);
-
-          board.members.forEach(function(member) {
-            var option = document.createElement('option');
-            option.value = member.id;
-            option.textContent = member.fullName;
-            memberSelect.appendChild(option);
-          });
+          // Member multi-select
+          var memberSelect = createMultiSelect(board.members, label.id);
 
           row.appendChild(labelContainer);
           row.appendChild(dateInput);
@@ -172,7 +223,8 @@
         .map(row => ({
           labelId: row.querySelector('.label-checkbox').value,
           dueDate: row.querySelector('.date-input').value,
-          members: Array.from(row.querySelector('.member-select').selectedOptions).map(option => option.value)
+          memberIds: Array.from(row.querySelectorAll('.member-option.selected'))
+                         .map(option => option.dataset.memberId)
         }));
 
       console.log('Selected cards:', selectedCards);
@@ -313,7 +365,7 @@
       }
 
       console.log(`Creating new card: "${newCardName}" based on template: "${templateCard.name}"`);
-      console.log('Selected members:', cardData.members);
+      console.log('Selected members:', cardData.memberIds);
 
       return fetch(`https://api.trello.com/1/cards?key=${TRELLO_APP_KEY}&token=${token}`, {
         method: 'POST',
@@ -323,7 +375,7 @@
           idCardSource: templateCard.id,
           name: newCardName,
           due: dueDate,
-          idMembers: cardData.members,
+          idMembers: cardData.memberIds,
           keepFromSource: 'all'
         })
       })
@@ -333,8 +385,8 @@
         console.log('Members on new card:', newCard.idMembers);
         
         // If members weren't added during card creation, add them now
-        if (cardData.members.length > 0 && (!newCard.idMembers || newCard.idMembers.length === 0)) {
-          return addMembersToCard(newCard.id, cardData.members, token)
+        if (cardData.memberIds.length > 0 && (!newCard.idMembers || newCard.idMembers.length === 0)) {
+          return addMembersToCard(newCard.id, cardData.memberIds, token)
             .then(() => newCard);
         }
         return newCard;
