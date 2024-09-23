@@ -8,11 +8,17 @@
         padding: 10px; 
         overflow-y: auto;
         font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Noto Sans, Ubuntu, Droid Sans, Helvetica Neue, sans-serif;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    #content {
+        width: 100%;
     }
     .error { color: red; margin-bottom: 10px; }
     .card-row {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         margin-bottom: 15px;
         padding: 10px;
         background-color: #f4f5f7;
@@ -21,8 +27,7 @@
     .label-container {
         display: flex;
         align-items: center;
-        width: 200px;
-        margin-right: 10px;
+        width: 30%;
     }
     .label-checkbox { margin-right: 10px; }
     .label-color-swatch { 
@@ -38,12 +43,11 @@
         text-overflow: ellipsis;
     }
     .date-input {
-        width: 130px;
-        margin-right: 10px;
+        width: 30%;
         padding: 5px;
     }
     .member-select {
-        width: 250px;
+        width: 30%;
         padding: 5px;
     }
     #createButton {
@@ -72,6 +76,18 @@
     var t = window.TrelloPowerUp.iframe({
       appKey: TRELLO_APP_KEY,
       appName: 'Sprint Cards Power-Up'
+    });
+
+    t.render(function(){
+        // Set the desired width
+        t.sizeTo('#content').then(function(){
+            return t.arg('desiredWidth');
+        }).then(function(desiredWidth){
+            if (desiredWidth) {
+                document.body.style.width = desiredWidth + 'px';
+                t.sizeTo(document.body);
+            }
+        });
     });
 
     function getLabelColor(color) {
