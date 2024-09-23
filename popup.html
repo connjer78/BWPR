@@ -9,7 +9,16 @@
       overflow-y: auto; 
     }
     .error { color: red; margin-bottom: 10px; }
-    .label-container { display: flex; align-items: center; margin-bottom: 5px; }
+    .card-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .label-container {
+      display: flex;
+      align-items: center;
+      width: 200px;
+    }
     .label-checkbox { margin-right: 10px; }
     .label-color-swatch { 
       width: 20px; 
@@ -18,59 +27,23 @@
       margin-right: 10px; 
     }
     .label-name { color: #000; }
-    .section { 
-      margin-bottom: 15px; 
+    .date-input {
+      width: 130px;
+      margin: 0 10px;
     }
-    #members {
-      width: 100%;
-      height: 120px; 
-      margin-bottom: 15px;
-    }
-    .help-text {
-      font-size: 12px;
-      color: #5e6c84;
-      margin-bottom: 10px;
-    }
-    #dueDate {
-      width: 100%;
-      margin-bottom: 10px;
+    .member-select {
+      width: 200px;
     }
     #createButton {
       width: 100%;
-    }
-    .label-date-container {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .label-container {
-      flex: 1;
-      display: flex;
-      align-items: center;
-    }
-    .date-input {
-      margin-left: 10px;
-      width: 130px;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
   <div id="error" class="error"></div>
   <div id="content">
-    <div class="section">
-      <h3>Labels and Due Dates</h3>
-      <div id="labels-and-dates"></div>
-    </div>
-    <div class="section">
-      <h3>Members</h3>
-      <select id="members" multiple>
-        <!-- Options will be populated dynamically -->
-      </select>
-      <div class="help-text">
-        Hold Ctrl (Windows) or Cmd (Mac) to select multiple members.
-        Click and drag or use Shift+Click to select a range.
-      </div>
-    </div>
+    <div id="card-rows"></div>
     <button id="createButton" class="mod-primary">Create Sprint Cards</button>
   </div>
   <script>
@@ -116,58 +89,113 @@
       return colors[color] || color;
     }
 
-    function populateLabels() {
-      return t.card('labels')
-        .then(function(card) {
-          var labelsAndDatesContainer = document.getElementById('labels-and-dates');
-          labelsAndDatesContainer.innerHTML = '';
-          card.labels.forEach(function(label) {
-            var labelDateContainer = document.createElement('div');
-            labelDateContainer.className = 'label-date-container';
-            
-            var labelContainer = document.createElement('div');
-            labelContainer.className = 'label-container';
-            
-            var checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.value = label.id;
-            checkbox.className = 'label-checkbox';
-            
-            var colorSwatch = document.createElement('div');
-            colorSwatch.className = 'label-color-swatch';
-            colorSwatch.style.backgroundColor = getLabelColor(label.color) || '#c4c9cc'; // Default to grey if color is undefined
-            
-            var labelName = document.createElement('span');
-            labelName.className = 'label-name';
-            labelName.textContent = label.name || label.color || 'Unnamed';
-            
-            labelContainer.appendChild(checkbox);
-            labelContainer.appendChild(colorSwatch);
-            labelContainer.appendChild(labelName);
-            
-            var dateInput = document.createElement('input');
-            dateInput.type = 'date';
-            dateInput.className = 'date-input';
-            dateInput.dataset.labelId = label.id;
-            
-            labelDateContainer.appendChild(labelContainer);
-            labelDateContainer.appendChild(dateInput);
-            labelsAndDatesContainer.appendChild(labelDateContainer);
-          });
-        });
-    }
+    function populateCardRows() {
+      return Promise.all([
+        t.card('labels'),
+        t.board('members')
+      ]).then(function([card, board]) {
+        var cardRowsContainer = document.getElementById('card-rows');
+        cardRowsContainer.innerHTML = '';
 
-    function populateMembers() {
-      return t.board('members')
-        .then(function(board) {
-          var membersSelect = document.getElementById('members');
-          membersSelect.innerHTML = '';
+        card.labels.forEach(function(label) {
+          var row = document.createElement('div');
+          row.className = 'card-row';
+
+          // Label checkbox and color
+          var labelContainer = document.createElement('div');
+          labelContainer.className = 'label-container';
+
+          var checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.value = label.id;
+          checkbox.className = 'label-checkbox';
+
+          var colorSwatch = document.createElement('div');
+          colorSwatch.className = 'label-color-swatch';
+          colorSwatch.style.backgroundColor = getLabelColor(label.color) || '#c4c9cc';
+
+          var labelName = document.createElement('span');
+          labelName.className = 'label-name';
+          labelName.textContent = label.name || label.color || 'Unnamed';
+
+          labelContainer.appendChild(checkbox);
+          labelContainer.appendChild(colorSwatch);
+          labelContainer.appendChild(labelName);
+
+          // Due date input
+          var dateInput = document.createElement('input');
+          dateInput.type = 'date';
+          dateInput.className = 'date-input';
+          dateInput.dataset.labelId = label.id;
+
+          // Member select dropdown
+          var memberSelect = document.createElement('select');
+          memberSelect.className = 'member-select';
+          memberSelect.dataset.labelId = label.id;
+          memberSelect.multiple = true;
+
+          var defaultOption = document.createElement('option');
+          defaultOption.value = '';
+          defaultOption.textContent = 'Select members';
+          defaultOption.disabled = true;
+          defaultOption.selected = true;
+          memberSelect.appendChild(defaultOption);
+
           board.members.forEach(function(member) {
             var option = document.createElement('option');
             option.value = member.id;
             option.textContent = member.fullName;
-            membersSelect.appendChild(option);
+            memberSelect.appendChild(option);
           });
+
+          row.appendChild(labelContainer);
+          row.appendChild(dateInput);
+          row.appendChild(memberSelect);
+          cardRowsContainer.appendChild(row);
+        });
+      });
+    }
+
+    function createCards() {
+      var selectedCards = Array.from(document.querySelectorAll('.card-row'))
+        .filter(row => row.querySelector('.label-checkbox').checked)
+        .map(row => ({
+          labelId: row.querySelector('.label-checkbox').value,
+          dueDate: row.querySelector('.date-input').value,
+          members: Array.from(row.querySelector('.member-select').selectedOptions).map(option => option.value)
+        }));
+
+      console.log('Selected cards:', selectedCards);
+
+      this.disabled = true;
+      this.textContent = 'Creating Cards...';
+
+      t.card('all')
+        .then(sourceCard => {
+          return t.board('id', 'name')
+            .then(board => {
+              return findSprintBoard()
+                .then(sprintBoard => {
+                  return findTemplatesList(sprintBoard.id)
+                    .then(templatesList => {
+                      return findBacklogList(sprintBoard.id)
+                        .then(backlogList => {
+                          return createCardsFromTemplates(sourceCard, selectedCards, templatesList, backlogList);
+                        });
+                    });
+                });
+            });
+        })
+        .then(() => {
+          t.closePopup();
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          document.getElementById('error').textContent = 'Error creating cards. Please try again.';
+        })
+        .finally(() => {
+          this.disabled = false;
+          this.textContent = 'Create Sprint Cards';
         });
     }
 
@@ -212,49 +240,6 @@
         });
     }
 
-    function createCards() {
-      var selectedLabels = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-        .map(checkbox => ({
-          id: checkbox.value,
-          dueDate: document.querySelector(`.date-input[data-label-id="${checkbox.value}"]`).value
-        }));
-      var selectedMembers = Array.from(document.getElementById('members').selectedOptions)
-        .map(option => option.value);
-
-      console.log('Selected members in createCards:', selectedMembers);
-
-      this.disabled = true;
-      this.textContent = 'Creating Cards...';
-
-      t.card('all')
-        .then(sourceCard => {
-          return t.board('id', 'name')
-            .then(board => {
-              return findSprintBoard()
-                .then(sprintBoard => {
-                  return findTemplatesList(sprintBoard.id)
-                    .then(templatesList => {
-                      return findBacklogList(sprintBoard.id)
-                        .then(backlogList => {
-                          return createCardsFromTemplates(sourceCard, selectedLabels, selectedMembers, templatesList, backlogList);
-                        });
-                    });
-                });
-            });
-        })
-        .then(() => {
-          t.closePopup();
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          document.getElementById('error').textContent = 'Error creating cards. Please try again.';
-        })
-        .finally(() => {
-          this.disabled = false;
-          this.textContent = 'Create Sprint Cards';
-        });
-    }
-
     function findTemplatesList(boardId) {
       return t.getRestApi().getToken()
         .then(token => {
@@ -273,20 +258,20 @@
         });
     }
 
-    function createCardsFromTemplates(sourceCard, selectedLabels, selectedMembers, templatesList, backlogList) {
+    function createCardsFromTemplates(sourceCard, selectedCards, templatesList, backlogList) {
       return t.getRestApi().getToken()
         .then(token => {
           return fetch(`https://api.trello.com/1/lists/${templatesList.id}/cards?key=${TRELLO_APP_KEY}&token=${token}`)
             .then(response => response.json())
             .then(templateCards => {
               console.log('Template cards:', templateCards);
-              console.log('Selected labels:', selectedLabels);
+              console.log('Selected cards:', selectedCards);
               console.log('Source card labels:', sourceCard.labels);
 
-              const createPromises = selectedLabels.map(labelData => {
-                const sourceLabel = sourceCard.labels.find(l => l.id === labelData.id);
+              const createPromises = selectedCards.map(cardData => {
+                const sourceLabel = sourceCard.labels.find(l => l.id === cardData.labelId);
                 if (!sourceLabel) {
-                  console.warn(`No matching source label found for ID ${labelData.id}`);
+                  console.warn(`No matching source label found for ID ${cardData.labelId}`);
                   return Promise.resolve();
                 }
 
@@ -296,7 +281,7 @@
 
                 if (templateCard) {
                   console.log(`Found matching template card for label "${sourceLabel.name}":`, templateCard);
-                  return createCardFromTemplate(sourceCard, templateCard, labelData, selectedMembers, backlogList, token);
+                  return createCardFromTemplate(sourceCard, templateCard, cardData, backlogList, token);
                 } else {
                   console.warn(`No template found for label "${sourceLabel.name}"`);
                   return Promise.resolve();
@@ -308,17 +293,17 @@
         });
     }
 
-    function createCardFromTemplate(sourceCard, templateCard, labelData, selectedMembers, backlogList, token) {
-      const sourceLabel = sourceCard.labels.find(l => l.id === labelData.id);
+    function createCardFromTemplate(sourceCard, templateCard, cardData, backlogList, token) {
+      const sourceLabel = sourceCard.labels.find(l => l.id === cardData.labelId);
       const newCardName = `${sourceCard.name}: ${sourceLabel ? sourceLabel.name : 'Unnamed Label'}`;
       let dueDate = null;
-      if (labelData.dueDate) {
-        const [year, month, day] = labelData.dueDate.split('-').map(Number);
+      if (cardData.dueDate) {
+        const [year, month, day] = cardData.dueDate.split('-').map(Number);
         dueDate = new Date(year, month - 1, day, 17, 0, 0, 0).toISOString();
       }
 
       console.log(`Creating new card: "${newCardName}" based on template: "${templateCard.name}"`);
-      console.log('Selected members:', selectedMembers);
+      console.log('Selected members:', cardData.members);
 
       return fetch(`https://api.trello.com/1/cards?key=${TRELLO_APP_KEY}&token=${token}`, {
         method: 'POST',
@@ -328,7 +313,7 @@
           idCardSource: templateCard.id,
           name: newCardName,
           due: dueDate,
-          idMembers: selectedMembers,
+          idMembers: cardData.members,
           keepFromSource: 'all'
         })
       })
@@ -338,8 +323,8 @@
         console.log('Members on new card:', newCard.idMembers);
         
         // If members weren't added during card creation, add them now
-        if (selectedMembers.length > 0 && (!newCard.idMembers || newCard.idMembers.length === 0)) {
-          return addMembersToCard(newCard.id, selectedMembers, token)
+        if (cardData.members.length > 0 && (!newCard.idMembers || newCard.idMembers.length === 0)) {
+          return addMembersToCard(newCard.id, cardData.members, token)
             .then(() => newCard);
         }
         return newCard;
@@ -375,7 +360,7 @@
     document.getElementById('createButton').addEventListener('click', createCards);
 
     // Initialize
-    Promise.all([populateLabels(), populateMembers()])
+    populateCardRows()
       .then(() => console.log('Initialization complete'))
       .catch(error => console.error('Initialization failed:', error));
   </script>
