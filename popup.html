@@ -367,6 +367,9 @@
       console.log(`Creating new card: "${newCardName}" based on template: "${templateCard.name}"`);
       console.log('Selected members:', cardData.memberIds);
 
+      // Log the attachments from the source card
+      console.log('Source card attachments:', sourceCard.attachments);
+
       return fetch(`https://api.trello.com/1/cards?key=${TRELLO_APP_KEY}&token=${token}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -376,14 +379,25 @@
           name: newCardName,
           due: dueDate,
           idMembers: cardData.memberIds,
-          keepFromSource: 'all'
+          keepFromSource: 'all' // This copies all attributes, including attachments
         })
       })
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to create new card');
+        }
+        return response.json(); // Return the new card object
+      })
       .then(newCard => {
         console.log('New card created:', newCard);
-        console.log('Members on new card:', newCard.idMembers);
-        
+        console.log('New card attachments:', newCard.attachments); // Log the attachments of the new card
+
+        // Check if the expected attachments are present
+        const expectedAttachmentUrls = sourceCard.attachments.map(att => att.url);
+        const newAttachmentUrls = newCard.attachments.map(att => att.url);
+        console.log('Expected attachment URLs:', expectedAttachmentUrls);
+        console.log('New card attachment URLs:', newAttachmentUrls);
+
         // If members weren't added during card creation, add them now
         if (cardData.memberIds.length > 0 && (!newCard.idMembers || newCard.idMembers.length === 0)) {
           return addMembersToCard(newCard.id, cardData.memberIds, token)
