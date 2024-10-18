@@ -367,9 +367,6 @@
       console.log(`Creating new card: "${newCardName}" based on template: "${templateCard.name}"`);
       console.log('Selected members:', cardData.memberIds);
 
-      // Log the attachments from the source card
-      console.log('Source card attachments:', sourceCard.attachments);
-
       return fetch(`https://api.trello.com/1/cards?key=${TRELLO_APP_KEY}&token=${token}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -412,8 +409,25 @@
           return newCard; // Return newCard here
         })
         .then(newCard => {
-          // Add the link attachment to the source card
-          return addAttachmentToCard(newCard.id, sourceCard, token);
+          // After all attachments are added, fetch the attachments for the new card
+          return fetch(`https://api.trello.com/1/cards/${newCard.id}/attachments?key=${TRELLO_APP_KEY}&token=${token}`)
+            .then(response => response.json())
+            .then(attachments => {
+              // Filter for image attachments
+              const imageAttachments = attachments.filter(att => att.url.match(/\.(jpg|jpeg|png|gif)$/i));
+              const coverImageUrl = imageAttachments.length > 0 ? imageAttachments[0].url : null;
+
+              // Set the cover image if an image attachment is found
+              if (coverImageUrl) {
+                return fetch(`https://api.trello.com/1/cards/${newCard.id}/cover?key=${TRELLO_APP_KEY}&token=${token}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    url: coverImageUrl // Set the first image attachment as the cover image
+                  })
+                });
+              }
+            });
         });
       });
     }
