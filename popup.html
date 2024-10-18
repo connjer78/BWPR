@@ -387,25 +387,24 @@
       })
       .then(newCard => {
         console.log('New card created:', newCard);
-        
-        let coverImageSet = false; // Flag to track if cover image has been set
 
         // Now, add attachments from the source card to the new card
         return Promise.all(sourceCard.attachments.map(attachment => {
-          const isImage = attachment.url.match(/\.(jpg|jpeg|png|gif)$/i); // Check if the attachment is an image
+          console.log(`Attaching: ${attachment.url}`); // Log the attachment URL for debugging
 
           return fetch(`https://api.trello.com/1/cards/${newCard.id}/attachments?key=${TRELLO_APP_KEY}&token=${token}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               url: attachment.url, // Use the URL of the source card's attachment
-              name: attachment.name, // Optionally, use the name of the attachment
-              setCover: isImage && !coverImageSet // Set as cover if it's an image and cover hasn't been set yet
+              name: attachment.name // Optionally, use the name of the attachment
             })
-          }).then(() => {
-            if (isImage && !coverImageSet) {
-              coverImageSet = true; // Mark that the cover image has been set
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`Failed to attach ${attachment.name}: ${response.statusText}`);
             }
+            return response.json(); // Return the attachment object
           });
         }))
         .then(() => {
