@@ -401,18 +401,21 @@
               name: attachment.name // Optionally, use the name of the attachment
             })
           });
-        }));
-      })
-      .then(() => {
-        console.log('All attachments from the source card have been added to the new card.');
-        // If members weren't added during card creation, add them now
-        if (cardData.memberIds.length > 0 && (!newCard.idMembers || newCard.idMembers.length === 0)) {
-          return addMembersToCard(newCard.id, cardData.memberIds, token)
-            .then(() => newCard);
-        }
-        return newCard;
-      })
-      .then(newCard => addAttachmentToCard(newCard.id, sourceCard, token));
+        }))
+        .then(() => {
+          console.log('All attachments from the source card have been added to the new card.');
+          // If members weren't added during card creation, add them now
+          if (cardData.memberIds.length > 0 && (!newCard.idMembers || newCard.idMembers.length === 0)) {
+            return addMembersToCard(newCard.id, cardData.memberIds, token)
+              .then(() => newCard);
+          }
+          return newCard; // Return newCard here
+        })
+        .then(newCard => {
+          // Add the link attachment to the source card
+          return addAttachmentToCard(newCard.id, sourceCard, token);
+        });
+      });
     }
 
     function addMembersToCard(cardId, memberIds, token) {
