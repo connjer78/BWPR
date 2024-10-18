@@ -388,15 +388,24 @@
       .then(newCard => {
         console.log('New card created:', newCard);
         
+        let coverImageSet = false; // Flag to track if cover image has been set
+
         // Now, add attachments from the source card to the new card
         return Promise.all(sourceCard.attachments.map(attachment => {
+          const isImage = attachment.url.match(/\.(jpg|jpeg|png|gif)$/i); // Check if the attachment is an image
+
           return fetch(`https://api.trello.com/1/cards/${newCard.id}/attachments?key=${TRELLO_APP_KEY}&token=${token}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               url: attachment.url, // Use the URL of the source card's attachment
-              name: attachment.name // Optionally, use the name of the attachment
+              name: attachment.name, // Optionally, use the name of the attachment
+              setCover: isImage && !coverImageSet // Set as cover if it's an image and cover hasn't been set yet
             })
+          }).then(() => {
+            if (isImage && !coverImageSet) {
+              coverImageSet = true; // Mark that the cover image has been set
+            }
           });
         }))
         .then(() => {
@@ -407,27 +416,6 @@
               .then(() => newCard);
           }
           return newCard; // Return newCard here
-        })
-        .then(newCard => {
-          // After all attachments are added, fetch the attachments for the new card
-          return fetch(`https://api.trello.com/1/cards/${newCard.id}/attachments?key=${TRELLO_APP_KEY}&token=${token}`)
-            .then(response => response.json())
-            .then(attachments => {
-              // Filter for image attachments
-              const imageAttachments = attachments.filter(att => att.url.match(/\.(jpg|jpeg|png|gif)$/i));
-              const coverImageUrl = imageAttachments.length > 0 ? imageAttachments[0].url : null;
-
-              // Set the cover image if an image attachment is found
-              if (coverImageUrl) {
-                return fetch(`https://api.trello.com/1/cards/${newCard.id}/cover?key=${TRELLO_APP_KEY}&token=${token}`, {
-                  method: 'PUT',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    url: coverImageUrl // Set the first image attachment as the cover image
-                  })
-                });
-              }
-            });
         });
       });
     }
